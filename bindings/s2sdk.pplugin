@@ -1,0 +1,2365 @@
+{
+  "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
+  "version": "3.4.3",
+  "name": "s2sdk",
+  "description": "Provides functionality for other plugins from Source 2 engine",
+  "author": "untrustedmodders",
+  "website": "https://github.com/untrustedmodders/",
+  "license": "GPLv3",
+  "entry": "bin/plugify-plugin-s2sdk",
+  "platforms": [],
+  "language": "cpp",
+  "dependencies": [
+    {
+      "name": "polyhook",
+      "constraints": ">=2.5.7"
+    },
+    {
+      "name": "configs",
+      "constraints": ">=2.1.2"
+    },
+    {
+      "name": "translations",
+      "optional": true
+    },
+    {
+      "name": "permissions",
+      "optional": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "GetClientUserID",
+      "group": "Clients",
+      "description": "Returns the current engine userid, or -1 for a disconnected or invalid slot.",
+      "funcName": "GetClientUserID",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false
+        }
+      ],
+      "retType": {
+        "type": "int32"
+      }
+    },
+    {
+      "name": "GetClientSteamID64",
+      "group": "Clients",
+      "description": "Returns the client's SteamID64 - a unique 64-bit identifier of a Steam account.",
+      "funcName": "GetClientSteamID64",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "uint64",
+        "description": "uint64_t The client's SteamID64."
+      }
+    },
+    {
+      "name": "GetClientLanguageCode",
+      "group": "Clients",
+      "description": "Retrieves a client's language as an ISO code. Unlike GetClientLanguage, which returns the raw cl_language value (\"english\", \"schinese\"), this returns the code translation files are keyed by (\"en\", \"zh-CN\"). Empty until the client answers the cl_language query, and always empty for bots. Reliably available starting from OnClientAuthenticated and OnClientPutInServer.",
+      "funcName": "GetClientLanguageCode",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "string",
+        "description": "The client's ISO language code."
+      }
+    },
+    {
+      "name": "GetClientName",
+      "group": "Clients",
+      "description": "Returns the client's name.",
+      "funcName": "GetClientName",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "string",
+        "description": "The client's name."
+      }
+    },
+    {
+      "name": "IsClientAuthorized",
+      "group": "Clients",
+      "description": "Checks if a certain player has been authenticated.",
+      "funcName": "IsClientAuthorized",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the player is authenticated, false otherwise."
+      }
+    },
+    {
+      "name": "IsClientConnected",
+      "group": "Clients",
+      "description": "Checks if a certain player is connected.",
+      "funcName": "IsClientConnected",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the player is connected, false otherwise."
+      }
+    },
+    {
+      "name": "IsClientInGame",
+      "group": "Clients",
+      "description": "Checks if a certain player has entered the game.",
+      "funcName": "IsClientInGame",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the player is in the game, false otherwise."
+      }
+    },
+    {
+      "name": "IsClientSourceTV",
+      "group": "Clients",
+      "description": "Checks if a certain player is the SourceTV bot.",
+      "funcName": "IsClientSourceTV",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the client is the SourceTV bot, false otherwise."
+      }
+    },
+    {
+      "name": "GetClientListening",
+      "group": "Clients",
+      "description": "Gets the listen override between a receiver and a sender.",
+      "funcName": "GetClientListening",
+      "paramTypes": [
+        {
+          "name": "receiverSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The slot of the player who listens."
+        },
+        {
+          "name": "senderSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The slot of the player who speaks."
+        }
+      ],
+      "retType": {
+        "type": "uint8",
+        "description": "The listen override for this pair.",
+        "enum": "ListenOverride"
+      }
+    },
+    {
+      "name": "SetClientListening",
+      "group": "Clients",
+      "description": "Sets the listen override between a receiver and a sender until the receiver disconnects.",
+      "funcName": "SetClientListening",
+      "paramTypes": [
+        {
+          "name": "receiverSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The slot of the player who listens."
+        },
+        {
+          "name": "senderSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The slot of the player who speaks."
+        },
+        {
+          "name": "listen",
+          "type": "uint8",
+          "ref": false,
+          "description": "The listen override to set.",
+          "enum": "ListenOverride"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "IsClientAlive",
+      "group": "Clients",
+      "description": "Checks if the client is alive or dead.",
+      "funcName": "IsClientAlive",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the client is alive, false if dead."
+      }
+    },
+    {
+      "name": "IsFakeClient",
+      "group": "Clients",
+      "description": "Checks if a certain player is a fake client.",
+      "funcName": "IsFakeClient",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the client is a fake client, false otherwise."
+      }
+    },
+    {
+      "name": "GetClientHealth",
+      "group": "Clients",
+      "description": "Retrieves the health of an client.",
+      "funcName": "GetClientHealth",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot whose health is to be retrieved."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "The health of the client, or 0 if the client is invalid."
+      }
+    },
+    {
+      "name": "SetClientHealth",
+      "group": "Clients",
+      "description": "Sets the health of an client.",
+      "funcName": "SetClientHealth",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot whose health is to be set."
+        },
+        {
+          "name": "health",
+          "type": "int32",
+          "ref": false,
+          "description": "The new health value to set for the client."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "GetClientTeam",
+      "group": "Clients",
+      "description": "Retrieves the team number of an client.",
+      "funcName": "GetClientTeam",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot whose team number is to be retrieved."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "The team number of the client, or 0 if the client is invalid.",
+        "enum": "CSTeam"
+      }
+    },
+    {
+      "name": "GetClientAbsOrigin",
+      "group": "Clients",
+      "description": "Retrieves the absolute origin of an client.",
+      "funcName": "GetClientAbsOrigin",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot whose absolute origin is to be retrieved."
+        }
+      ],
+      "retType": {
+        "type": "vec3",
+        "description": "A vector where the absolute origin will be stored."
+      }
+    },
+    {
+      "name": "SetClientAbsOrigin",
+      "group": "Clients",
+      "description": "Sets the absolute origin of an client.",
+      "funcName": "SetClientAbsOrigin",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot whose absolute origin is to be set."
+        },
+        {
+          "name": "origin",
+          "type": "vec3",
+          "ref": false,
+          "description": "The new absolute origin to set for the client."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "ApplyAbsVelocityImpulseToClient",
+      "group": "Clients",
+      "description": "Apply an absolute velocity impulse to an client.",
+      "funcName": "ApplyAbsVelocityImpulseToClient",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot to apply impulse to"
+        },
+        {
+          "name": "vecImpulse",
+          "type": "vec3",
+          "ref": false,
+          "description": "Velocity impulse vector to apply"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "GetClientPawn",
+      "group": "Clients",
+      "description": "Retrieves the pawn entity pointer associated with a client.",
+      "funcName": "GetClientPawn",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        }
+      ],
+      "retType": {
+        "type": "ptr64",
+        "description": "A pointer to the client's pawn entity, or nullptr if the client or controller is invalid."
+      }
+    },
+    {
+      "name": "SwitchClientTeam",
+      "group": "Clients",
+      "description": "Switches the player's team.",
+      "funcName": "SwitchClientTeam",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        },
+        {
+          "name": "team",
+          "type": "int32",
+          "ref": false,
+          "description": "The team index to switch the client to.",
+          "enum": "CSTeam"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "ChangeClientTeam",
+      "group": "Clients",
+      "description": "Changes the player's team.",
+      "funcName": "ChangeClientTeam",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        },
+        {
+          "name": "team",
+          "type": "int32",
+          "ref": false,
+          "description": "The team index to change the client to.",
+          "enum": "CSTeam"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "ForceRespawnClient",
+      "group": "Clients",
+      "description": "Forces a full engine respawn for a player, including when the current pawn is alive. Supported in CS2.",
+      "funcName": "ForceRespawnClient",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot to respawn."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "ForcePlayerSuicide",
+      "group": "Clients",
+      "description": "Forces a player to commit suicide.",
+      "funcName": "ForcePlayerSuicide",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot."
+        },
+        {
+          "name": "explode",
+          "type": "bool",
+          "ref": false,
+          "description": "If true, the client will explode upon death."
+        },
+        {
+          "name": "force",
+          "type": "bool",
+          "ref": false,
+          "description": "If true, the suicide will be forced."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "KickClient",
+      "group": "Clients",
+      "description": "Disconnects a client from the server as soon as the next frame starts.",
+      "funcName": "KickClient",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot to be kicked."
+        },
+        {
+          "name": "reason",
+          "type": "int32",
+          "ref": false,
+          "description": "The network-level reason code describing why the client is being disconnected.",
+          "enum": "NetworkDisconnectionReason"
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "ref": false,
+          "description": "The optional internal diagnostic message. If empty, no message is passed to the engine."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "AddConsoleCommand",
+      "group": "Commands",
+      "description": "Creates a console command or hooks an already existing one.",
+      "funcName": "AddConsoleCommand",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "ref": false,
+          "description": "The name of the console command."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "ref": false,
+          "description": "A brief description of what the command does."
+        },
+        {
+          "name": "flags",
+          "type": "int64",
+          "ref": false,
+          "description": "Command flags that define the behavior of the command.",
+          "enum": "ConVarFlag"
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "A callback function that is invoked when the command is executed.",
+          "prototype": "ConCommandCallback"
+        },
+        {
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": "HookMode"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the command was successfully created; otherwise, false."
+      }
+    },
+    {
+      "name": "RemoveCommand",
+      "group": "Commands",
+      "description": "Removes a console command from the system.",
+      "funcName": "RemoveCommand",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "ref": false,
+          "description": "The name of the command to be removed."
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "The callback function associated with the command to be removed.",
+          "prototype": "ConCommandCallback"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "true if the command was successfully removed; otherwise, false."
+      }
+    },
+    {
+      "name": "AddCommandListener",
+      "group": "Commands",
+      "description": "Adds a callback that will fire when a command is sent to the server.",
+      "funcName": "AddCommandListener",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "ref": false,
+          "description": "The name of the command."
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "The callback function that will be invoked when the command is executed.",
+          "prototype": "ConCommandCallback"
+        },
+        {
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": "HookMode"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true if the callback was successfully added, false otherwise."
+      }
+    },
+    {
+      "name": "RemoveCommandListener",
+      "group": "Commands",
+      "description": "Removes a callback that fires when a command is sent to the server.",
+      "funcName": "RemoveCommandListener",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "ref": false,
+          "description": "The name of the command."
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "The callback function to be removed.",
+          "prototype": "ConCommandCallback"
+        },
+        {
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": "HookMode"
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "Returns true if the callback was successfully removed, false otherwise."
+      }
+    },
+    {
+      "name": "ServerCommand",
+      "group": "Commands",
+      "description": "Executes a server command as if it were run on the server console or through RCON.",
+      "funcName": "ServerCommand",
+      "paramTypes": [
+        {
+          "name": "command",
+          "type": "string",
+          "ref": false,
+          "description": "The command to execute on the server."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "PrintToServer",
+      "group": "Console",
+      "description": "Sends a message to the server console.",
+      "funcName": "PrintToServer",
+      "paramTypes": [
+        {
+          "name": "msg",
+          "type": "string",
+          "ref": false,
+          "description": "The message to be sent to the server console."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "PrintToChat",
+      "group": "Console",
+      "description": "Prints a message to a specific client in the chat area.",
+      "funcName": "PrintToChat",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot to whom the message will be sent."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "ref": false,
+          "description": "The message to be printed in the chat area."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "PrintToChatColored",
+      "group": "Console",
+      "description": "Prints a colored message to a specific client in the chat area.",
+      "funcName": "PrintToChatColored",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot to whom the message will be sent."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "ref": false,
+          "description": "The message to be printed in the chat area with color."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "FindConVar",
+      "group": "Cvars",
+      "description": "Searches for a console variable.",
+      "funcName": "FindConVar",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "ref": false,
+          "description": "The name of the console variable to search for."
+        }
+      ],
+      "retType": {
+        "type": "uint64",
+        "description": "A handle to the console variable data if found; otherwise, nullptr."
+      }
+    },
+    {
+      "name": "IsConVarFlagSet",
+      "group": "Cvars",
+      "description": "Checks if a specific flag is set for a console variable.",
+      "funcName": "IsConVarFlagSet",
+      "paramTypes": [
+        {
+          "name": "conVarHandle",
+          "type": "uint64",
+          "ref": false,
+          "description": "The handle to the console variable data."
+        },
+        {
+          "name": "flag",
+          "type": "int64",
+          "ref": false,
+          "description": "The flag to check against the console variable."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "True if the flag is set; otherwise, false."
+      }
+    },
+    {
+      "name": "GetConVarValue",
+      "group": "Cvars",
+      "description": "Retrieves the current value of a console variable and stores it in the output string.",
+      "funcName": "GetConVarValue",
+      "paramTypes": [
+        {
+          "name": "conVarHandle",
+          "type": "uint64",
+          "ref": false,
+          "description": "The handle to the console variable data."
+        }
+      ],
+      "retType": {
+        "type": "string",
+        "description": "The output value in string format."
+      }
+    },
+    {
+      "name": "SetConVarValue",
+      "group": "Cvars",
+      "description": "Sets the value of a console variable.",
+      "funcName": "SetConVarValue",
+      "paramTypes": [
+        {
+          "name": "conVarHandle",
+          "type": "uint64",
+          "ref": false,
+          "description": "The handle to the console variable data."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "ref": false,
+          "description": "The string value to set for the console variable."
+        },
+        {
+          "name": "replicate",
+          "type": "bool",
+          "ref": false,
+          "description": "If set to true, the new convar value will be set on all clients. This will only work if the convar has the FCVAR_REPLICATED flag and actually exists on clients."
+        },
+        {
+          "name": "notify",
+          "type": "bool",
+          "ref": false,
+          "description": "If set to true, clients will be notified that the convar has changed. This will only work if the convar has the FCVAR_NOTIFY flag."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "GetMaxClients",
+      "group": "Engine",
+      "description": "Returns the maximum number of clients that can connect to the server.",
+      "funcName": "GetMaxClients",
+      "paramTypes": [],
+      "retType": {
+        "type": "int32",
+        "description": "The maximum client count, or -1 if global variables are not initialized."
+      }
+    },
+    {
+      "name": "EntPointerToEntHandle",
+      "group": "Entities",
+      "description": "Converts an entity pointer into an entity handle.",
+      "funcName": "EntPointerToEntHandle",
+      "paramTypes": [
+        {
+          "name": "entity",
+          "type": "ptr64",
+          "ref": false,
+          "description": "A pointer to the entity to convert."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "The entity handle as an integer, or INVALID_EHANDLE_INDEX if the entity is nullptr."
+      }
+    },
+    {
+      "name": "IsValidEntHandle",
+      "group": "Entities",
+      "description": "Checks if the provided entity handle is valid.",
+      "funcName": "IsValidEntHandle",
+      "paramTypes": [
+        {
+          "name": "entityHandle",
+          "type": "int32",
+          "ref": false,
+          "description": "The entity handle to check."
+        }
+      ],
+      "retType": {
+        "type": "bool",
+        "description": "True if the entity handle is valid, false otherwise."
+      }
+    },
+    {
+      "name": "GetEntityMoveType",
+      "group": "Entities",
+      "description": "Retrieves the movement type of an entity.",
+      "funcName": "GetEntityMoveType",
+      "paramTypes": [
+        {
+          "name": "entityHandle",
+          "type": "int32",
+          "ref": false,
+          "description": "The handle of the entity whose movement type is to be retrieved."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "The movement type of the entity, or 0 if the entity is invalid.",
+        "enum": "MoveType"
+      }
+    },
+    {
+      "name": "SetEntityMoveType",
+      "group": "Entities",
+      "description": "Sets the movement type of an entity.",
+      "funcName": "SetEntityMoveType",
+      "paramTypes": [
+        {
+          "name": "entityHandle",
+          "type": "int32",
+          "ref": false,
+          "description": "The handle of the entity whose movement type is to be set."
+        },
+        {
+          "name": "moveType",
+          "type": "int32",
+          "ref": false,
+          "description": "The new movement type to set for the entity.",
+          "enum": "MoveType"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "HookEvent",
+      "group": "Events",
+      "description": "Creates a hook for when a game event is fired.",
+      "funcName": "HookEvent",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "ref": false,
+          "description": "The name of the event to hook."
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "The callback function to call when the event is fired.",
+          "prototype": "EventCallback"
+        },
+        {
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": "HookMode"
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "An integer indicating the result of the hook operation.",
+        "enum": "EventHookError"
+      }
+    },
+    {
+      "name": "UnhookEvent",
+      "group": "Events",
+      "description": "Removes a hook for when a game event is fired.",
+      "funcName": "UnhookEvent",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "ref": false,
+          "description": "The name of the event to unhook."
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "The callback function to remove.",
+          "prototype": "EventCallback"
+        },
+        {
+          "type": "uint8",
+          "name": "type",
+          "description": "Whether the hook was in post mode (after processing) or pre mode (before processing).",
+          "enum": "HookMode"
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "An integer indicating the result of the unhook operation.",
+        "enum": "EventHookError"
+      }
+    },
+    {
+      "name": "GetEventPlayerSlot",
+      "group": "Events",
+      "description": "Retrieves the player slot of a game event's key.",
+      "funcName": "GetEventPlayerSlot",
+      "paramTypes": [
+        {
+          "name": "event",
+          "type": "ptr64",
+          "ref": false,
+          "description": "A pointer to the IGameEvent object containing event data."
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "ref": false,
+          "description": "The key for which to retrieve the player index."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "The player slot associated with the key."
+      }
+    },
+    {
+      "name": "OnClientPutInServer_Register",
+      "group": "Listeners",
+      "description": "Register callback to event.",
+      "funcName": "OnClientPutInServer_Register",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnClientPutInServerCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnClientPutInServer_Unregister",
+      "group": "Listeners",
+      "description": "Unregister callback to event.",
+      "funcName": "OnClientPutInServer_Unregister",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnClientPutInServerCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnClientDisconnect_Register",
+      "group": "Listeners",
+      "description": "Register callback to event.",
+      "funcName": "OnClientDisconnect_Register",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnClientDisconnectCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnClientDisconnect_Unregister",
+      "group": "Listeners",
+      "description": "Unregister callback to event.",
+      "funcName": "OnClientDisconnect_Unregister",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnClientDisconnectCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnClientAuthenticated_Register",
+      "group": "Listeners",
+      "description": "Register callback to event.",
+      "funcName": "OnClientAuthenticated_Register",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnClientAuthenticatedCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnClientAuthenticated_Unregister",
+      "group": "Listeners",
+      "description": "Unregister callback to event.",
+      "funcName": "OnClientAuthenticated_Unregister",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnClientAuthenticatedCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnEntityDeleted_Register",
+      "group": "Listeners",
+      "description": "Register callback to event.",
+      "funcName": "OnEntityDeleted_Register",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnEntityDeletedCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnEntityDeleted_Unregister",
+      "group": "Listeners",
+      "description": "Unregister callback to event.",
+      "funcName": "OnEntityDeleted_Unregister",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnEntityDeletedCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnMapEnd_Register",
+      "group": "Listeners",
+      "description": "Register callback to event.",
+      "funcName": "OnMapEnd_Register",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnMapEndCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnMapEnd_Unregister",
+      "group": "Listeners",
+      "description": "Unregister callback to event.",
+      "funcName": "OnMapEnd_Unregister",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnMapEndCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnGameFrame_Register",
+      "group": "Listeners",
+      "description": "Register callback to event.",
+      "funcName": "OnGameFrame_Register",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnGameFrameCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OnGameFrame_Unregister",
+      "group": "Listeners",
+      "description": "Unregister callback to event.",
+      "funcName": "OnGameFrame_Unregister",
+      "paramTypes": [
+        {
+          "name": "callback",
+          "type": "function",
+          "ref": false,
+          "description": "Function callback.",
+          "prototype": "OnGameFrameCallback"
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    }
+  ],
+  "prototypes": [
+    {
+      "name": "ConCommandCallback",
+      "funcName": "ConCommandCallback",
+      "description": "Handles the execution of a command triggered by a caller. This function processes the command, interprets its context, and handles any provided arguments.",
+      "paramTypes": [
+        {
+          "name": "caller",
+          "type": "int32",
+          "description": "An identifier for the entity or object invoking the command. Typically used to track the source of the command."
+        },
+        {
+          "name": "context",
+          "type": "int32",
+          "description": "The context in which the command is being executed. This value can be used to provide additional information about the environment or state related to the command.",
+          "enum": "ConCommandContext"
+        },
+        {
+          "name": "arguments",
+          "type": "string[]",
+          "description": "An array of strings representing the arguments passed to the command. These arguments define the parameters or options provided by the caller."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "Indicates the result of the action execution.",
+        "enum": "ResultType"
+      }
+    },
+    {
+      "name": "EventCallback",
+      "funcName": "EventCallback",
+      "description": "Handles events triggered by the game event system. This function processes the event data, determines the necessary action, and optionally prevents event broadcasting.",
+      "paramTypes": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the event being handled. This string is used to identify the type or category of the event."
+        },
+        {
+          "name": "event",
+          "type": "ptr64",
+          "description": "A 64-bit pointer to the event data structure. This pointer contains detailed information about the event being processed."
+        },
+        {
+          "name": "dontBroadcast",
+          "type": "bool",
+          "description": "A boolean flag indicating whether the event should be prevented from being broadcasted to other listeners. Set to `true` to suppress broadcasting."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "Indicates the result of the action execution.",
+        "enum": "ResultType"
+      }
+    },
+    {
+      "name": "OnClientPutInServerCallback",
+      "funcName": "OnClientPutInServerCallback",
+      "description": "Called when a client is entering the game.",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "description": "The player slot"
+        }
+      ],
+      "retType": {
+        "type": "void",
+        "description": ""
+      }
+    },
+    {
+      "name": "OnClientDisconnectCallback",
+      "funcName": "OnClientDisconnectCallback",
+      "description": "Called when a client leaves the current map, for players and bots, before the player_disconnect event. Paired with OnClientPutInServer: a player staying through a map change gets it too, with the reason NETWORK_DISCONNECT_SHUTDOWN. It can also come without OnClientPutInServer if the client leaves before entering the game. Use OnClientSessionEnd for the end of the connection. The controller and pawn are unavailable once the callbacks return.",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "description": "The player slot"
+        },
+        {
+          "name": "reason",
+          "type": "int32",
+          "description": "The reason for disconnect",
+          "enum": "NetworkDisconnectionReason"
+        }
+      ],
+      "retType": {
+        "type": "void",
+        "description": ""
+      }
+    },
+    {
+      "name": "OnClientAuthenticatedCallback",
+      "funcName": "OnClientAuthenticatedCallback",
+      "description": "Called when a client receives an auth ID.",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "description": "The player slot"
+        },
+        {
+          "name": "steamID",
+          "type": "uint64",
+          "description": "Steam account ID or 0 if not available."
+        }
+      ],
+      "retType": {
+        "type": "void",
+        "description": ""
+      }
+    },
+    {
+      "name": "OnEntityDeletedCallback",
+      "funcName": "OnEntityDeletedCallback",
+      "description": "Called when when an entity is destroyed.",
+      "paramTypes": [
+        {
+          "name": "entityHandle",
+          "type": "int32",
+          "description": "The deleted entity handle"
+        }
+      ],
+      "retType": {
+        "type": "void",
+        "description": ""
+      }
+    },
+    {
+      "name": "OnMapEndCallback",
+      "funcName": "OnMapEndCallback",
+      "description": "Called on every map end.",
+      "paramTypes": [],
+      "retType": {
+        "type": "void",
+        "description": ""
+      }
+    },
+    {
+      "name": "OnGameFrameCallback",
+      "funcName": "OnGameFrameCallback",
+      "description": "Called before every server frame. Note that you should avoid doing expensive computations or declaring large local arrays.",
+      "paramTypes": [
+        {
+          "name": "simulating",
+          "type": "bool",
+          "description": ""
+        },
+        {
+          "name": "firstTick",
+          "type": "bool",
+          "description": ""
+        },
+        {
+          "name": "lastTick",
+          "type": "bool",
+          "description": ""
+        }
+      ],
+      "retType": {
+        "type": "void",
+        "description": ""
+      }
+    }
+  ],
+  "enums": [
+    {
+      "name": "ListenOverride",
+      "description": "Override of whether a receiver hears a sender.",
+      "values": [
+        {
+          "name": "Default",
+          "description": "Voice flags decide.",
+          "value": 0
+        },
+        {
+          "name": "Mute",
+          "description": "The receiver doesn't hear the sender.",
+          "value": 1
+        },
+        {
+          "name": "Hear",
+          "description": "The receiver hears the sender.",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "MoveType",
+      "description": "Enum representing various movement types for entities.",
+      "values": [
+        {
+          "value": 0,
+          "name": "None",
+          "description": "Never moves."
+        },
+        {
+          "value": 1,
+          "name": "Isometric",
+          "description": "Previously isometric movement type."
+        },
+        {
+          "value": 2,
+          "name": "Walk",
+          "description": "Player only - moving on the ground."
+        },
+        {
+          "value": 3,
+          "name": "Fly",
+          "description": "No gravity, but still collides with stuff."
+        },
+        {
+          "value": 4,
+          "name": "Flygravity",
+          "description": "Flies through the air and is affected by gravity."
+        },
+        {
+          "value": 5,
+          "name": "Vphysics",
+          "description": "Uses VPHYSICS for simulation."
+        },
+        {
+          "value": 6,
+          "name": "Push",
+          "description": "No clip to world, push and crush."
+        },
+        {
+          "value": 7,
+          "name": "Noclip",
+          "description": "No gravity, no collisions, still has velocity/avelocity."
+        },
+        {
+          "value": 8,
+          "name": "Ladder",
+          "description": "Used by players only when going onto a ladder."
+        },
+        {
+          "value": 9,
+          "name": "Observer",
+          "description": "Observer movement, depends on player's observer mode."
+        },
+        {
+          "value": 10,
+          "name": "Custom",
+          "description": "Allows the entity to describe its own physics."
+        }
+      ]
+    },
+    {
+      "name": "CSTeam",
+      "description": "Enum representing the possible teams in Counter-Strike.",
+      "values": [
+        {
+          "value": 0,
+          "name": "None",
+          "description": "No team."
+        },
+        {
+          "value": 1,
+          "name": "Spectator",
+          "description": "Spectator team."
+        },
+        {
+          "value": 2,
+          "name": "T",
+          "description": "Terrorist team."
+        },
+        {
+          "value": 3,
+          "name": "CT",
+          "description": "Counter-Terrorist team."
+        }
+      ]
+    },
+    {
+      "name": "NetworkDisconnectionReason",
+      "description": "Enum representing reasons for network disconnection.",
+      "values": [
+        {
+          "value": 0,
+          "name": "Invalid",
+          "description": "Invalid."
+        },
+        {
+          "value": 1,
+          "name": "Shutdown",
+          "description": "Shutdown."
+        },
+        {
+          "value": 2,
+          "name": "DisconnectByUser",
+          "description": "Disconnect by user."
+        },
+        {
+          "value": 3,
+          "name": "DisconnectByServer",
+          "description": "Disconnect by server."
+        },
+        {
+          "value": 4,
+          "name": "Lost",
+          "description": "Lost."
+        },
+        {
+          "value": 5,
+          "name": "Overflow",
+          "description": "Overflow."
+        },
+        {
+          "value": 6,
+          "name": "SteamBanned",
+          "description": "Steam banned."
+        },
+        {
+          "value": 7,
+          "name": "SteamInuse",
+          "description": "Steam inuse."
+        },
+        {
+          "value": 8,
+          "name": "SteamTicket",
+          "description": "Steam ticket."
+        },
+        {
+          "value": 9,
+          "name": "SteamLogon",
+          "description": "Steam logon."
+        },
+        {
+          "value": 10,
+          "name": "SteamAuthcancelled",
+          "description": "Steam authcancelled."
+        },
+        {
+          "value": 11,
+          "name": "SteamAuthalreadyused",
+          "description": "Steam authalreadyused."
+        },
+        {
+          "value": 12,
+          "name": "SteamAuthinvalid",
+          "description": "Steam authinvalid."
+        },
+        {
+          "value": 13,
+          "name": "SteamVacbanstate",
+          "description": "Steam vacbanstate."
+        },
+        {
+          "value": 14,
+          "name": "SteamLoggedInElsewhere",
+          "description": "Steam logged in elsewhere."
+        },
+        {
+          "value": 15,
+          "name": "SteamVacCheckTimedout",
+          "description": "Steam vac check timedout."
+        },
+        {
+          "value": 16,
+          "name": "SteamDropped",
+          "description": "Steam dropped."
+        },
+        {
+          "value": 17,
+          "name": "SteamOwnership",
+          "description": "Steam ownership."
+        },
+        {
+          "value": 18,
+          "name": "ServerinfoOverflow",
+          "description": "Serverinfo overflow."
+        },
+        {
+          "value": 19,
+          "name": "TickmsgOverflow",
+          "description": "Tickmsg overflow."
+        },
+        {
+          "value": 20,
+          "name": "StringtablemsgOverflow",
+          "description": "Stringtablemsg overflow."
+        },
+        {
+          "value": 21,
+          "name": "DeltaentmsgOverflow",
+          "description": "Deltaentmsg overflow."
+        },
+        {
+          "value": 22,
+          "name": "TempentmsgOverflow",
+          "description": "Tempentmsg overflow."
+        },
+        {
+          "value": 23,
+          "name": "SoundsmsgOverflow",
+          "description": "Soundsmsg overflow."
+        },
+        {
+          "value": 24,
+          "name": "Snapshotoverflow",
+          "description": "Snapshotoverflow."
+        },
+        {
+          "value": 25,
+          "name": "Snapshoterror",
+          "description": "Snapshoterror."
+        },
+        {
+          "value": 26,
+          "name": "Reliableoverflow",
+          "description": "Reliableoverflow."
+        },
+        {
+          "value": 27,
+          "name": "Baddeltatick",
+          "description": "Baddeltatick."
+        },
+        {
+          "value": 28,
+          "name": "Nomoresplits",
+          "description": "Nomoresplits."
+        },
+        {
+          "value": 29,
+          "name": "Timedout",
+          "description": "Timedout."
+        },
+        {
+          "value": 30,
+          "name": "Disconnected",
+          "description": "Disconnected."
+        },
+        {
+          "value": 31,
+          "name": "Leavingsplit",
+          "description": "Leavingsplit."
+        },
+        {
+          "value": 32,
+          "name": "Differentclasstables",
+          "description": "Differentclasstables."
+        },
+        {
+          "value": 33,
+          "name": "Badrelaypassword",
+          "description": "Badrelaypassword."
+        },
+        {
+          "value": 34,
+          "name": "Badspectatorpassword",
+          "description": "Badspectatorpassword."
+        },
+        {
+          "value": 35,
+          "name": "Hltvrestricted",
+          "description": "Hltvrestricted."
+        },
+        {
+          "value": 36,
+          "name": "Nospectators",
+          "description": "Nospectators."
+        },
+        {
+          "value": 37,
+          "name": "Hltvunavailable",
+          "description": "Hltvunavailable."
+        },
+        {
+          "value": 38,
+          "name": "Hltvstop",
+          "description": "Hltvstop."
+        },
+        {
+          "value": 39,
+          "name": "Kicked",
+          "description": "Kicked."
+        },
+        {
+          "value": 40,
+          "name": "Banadded",
+          "description": "Banadded."
+        },
+        {
+          "value": 41,
+          "name": "Kickbanadded",
+          "description": "Kickbanadded."
+        },
+        {
+          "value": 42,
+          "name": "Hltvdirect",
+          "description": "Hltvdirect."
+        },
+        {
+          "value": 43,
+          "name": "PureserverClientextra",
+          "description": "Pureserver clientextra."
+        },
+        {
+          "value": 44,
+          "name": "PureserverMismatch",
+          "description": "Pureserver mismatch."
+        },
+        {
+          "value": 45,
+          "name": "Usercmd",
+          "description": "Usercmd."
+        },
+        {
+          "value": 46,
+          "name": "RejectedByGame",
+          "description": "Rejected by game."
+        },
+        {
+          "value": 47,
+          "name": "MessageParseError",
+          "description": "Message parse error."
+        },
+        {
+          "value": 48,
+          "name": "InvalidMessageError",
+          "description": "Invalid message error."
+        },
+        {
+          "value": 49,
+          "name": "BadServerPassword",
+          "description": "Bad server password."
+        },
+        {
+          "value": 50,
+          "name": "DirectConnectReservation",
+          "description": "Direct connect reservation."
+        },
+        {
+          "value": 51,
+          "name": "ConnectionFailure",
+          "description": "Connection failure."
+        },
+        {
+          "value": 52,
+          "name": "NoPeerGroupHandlers",
+          "description": "No peer group handlers."
+        },
+        {
+          "value": 53,
+          "name": "Reconnection",
+          "description": "Reconnection."
+        },
+        {
+          "value": 54,
+          "name": "Loopshutdown",
+          "description": "Loopshutdown."
+        },
+        {
+          "value": 55,
+          "name": "Loopdeactivate",
+          "description": "Loopdeactivate."
+        },
+        {
+          "value": 56,
+          "name": "HostEndgame",
+          "description": "Host endgame."
+        },
+        {
+          "value": 57,
+          "name": "LoopLevelloadActivate",
+          "description": "Loop levelload activate."
+        },
+        {
+          "value": 58,
+          "name": "CreateServerFailed",
+          "description": "Create server failed."
+        },
+        {
+          "value": 59,
+          "name": "Exiting",
+          "description": "Exiting."
+        },
+        {
+          "value": 60,
+          "name": "RequestHoststateIdle",
+          "description": "Request hoststate idle."
+        },
+        {
+          "value": 61,
+          "name": "RequestHoststateHltvrelay",
+          "description": "Request hoststate hltvrelay."
+        },
+        {
+          "value": 62,
+          "name": "ClientConsistencyFail",
+          "description": "Client consistency fail."
+        },
+        {
+          "value": 63,
+          "name": "ClientUnableToCrcMap",
+          "description": "Client unable to crc map."
+        },
+        {
+          "value": 64,
+          "name": "ClientNoMap",
+          "description": "Client no map."
+        },
+        {
+          "value": 65,
+          "name": "ClientDifferentMap",
+          "description": "Client different map."
+        },
+        {
+          "value": 66,
+          "name": "ServerRequiresSteam",
+          "description": "Server requires steam."
+        },
+        {
+          "value": 67,
+          "name": "SteamDenyMisc",
+          "description": "Steam deny misc."
+        },
+        {
+          "value": 68,
+          "name": "SteamDenyBadAntiCheat",
+          "description": "Steam deny bad anti cheat."
+        },
+        {
+          "value": 69,
+          "name": "ServerShutdown",
+          "description": "Server shutdown."
+        },
+        {
+          "value": 71,
+          "name": "ReplayIncompatible",
+          "description": "Replay incompatible."
+        },
+        {
+          "value": 72,
+          "name": "ConnectRequestTimedout",
+          "description": "Connect request timedout."
+        },
+        {
+          "value": 73,
+          "name": "ServerIncompatible",
+          "description": "Server incompatible."
+        },
+        {
+          "value": 74,
+          "name": "LocalproblemManyrelays",
+          "description": "Localproblem manyrelays."
+        },
+        {
+          "value": 75,
+          "name": "LocalproblemHostedserverprimaryrelay",
+          "description": "Localproblem hostedserverprimaryrelay."
+        },
+        {
+          "value": 76,
+          "name": "LocalproblemNetworkconfig",
+          "description": "Localproblem networkconfig."
+        },
+        {
+          "value": 77,
+          "name": "LocalproblemOther",
+          "description": "Localproblem other."
+        },
+        {
+          "value": 79,
+          "name": "RemoteTimeout",
+          "description": "Remote timeout."
+        },
+        {
+          "value": 80,
+          "name": "RemoteTimeoutConnecting",
+          "description": "Remote timeout connecting."
+        },
+        {
+          "value": 81,
+          "name": "RemoteOther",
+          "description": "Remote other."
+        },
+        {
+          "value": 82,
+          "name": "RemoteBadcrypt",
+          "description": "Remote badcrypt."
+        },
+        {
+          "value": 83,
+          "name": "RemoteCertnottrusted",
+          "description": "Remote certnottrusted."
+        },
+        {
+          "value": 84,
+          "name": "Unusual",
+          "description": "Unusual."
+        },
+        {
+          "value": 85,
+          "name": "InternalError",
+          "description": "Internal error."
+        },
+        {
+          "value": 128,
+          "name": "RejectBadchallenge",
+          "description": "Reject badchallenge."
+        },
+        {
+          "value": 129,
+          "name": "RejectNolobby",
+          "description": "Reject nolobby."
+        },
+        {
+          "value": 130,
+          "name": "RejectBackgroundMap",
+          "description": "Reject background map."
+        },
+        {
+          "value": 131,
+          "name": "RejectSinglePlayer",
+          "description": "Reject single player."
+        },
+        {
+          "value": 132,
+          "name": "RejectHiddenGame",
+          "description": "Reject hidden game."
+        },
+        {
+          "value": 133,
+          "name": "RejectLanrestrict",
+          "description": "Reject lanrestrict."
+        },
+        {
+          "value": 134,
+          "name": "RejectBadpassword",
+          "description": "Reject badpassword."
+        },
+        {
+          "value": 135,
+          "name": "RejectServerfull",
+          "description": "Reject serverfull."
+        },
+        {
+          "value": 136,
+          "name": "RejectInvalidreservation",
+          "description": "Reject invalidreservation."
+        },
+        {
+          "value": 137,
+          "name": "RejectFailedchannel",
+          "description": "Reject failedchannel."
+        },
+        {
+          "value": 138,
+          "name": "RejectConnectFromLobby",
+          "description": "Reject connect from lobby."
+        },
+        {
+          "value": 139,
+          "name": "RejectReservedForLobby",
+          "description": "Reject reserved for lobby."
+        },
+        {
+          "value": 140,
+          "name": "RejectInvalidkeylength",
+          "description": "Reject invalidkeylength."
+        },
+        {
+          "value": 141,
+          "name": "RejectOldprotocol",
+          "description": "Reject oldprotocol."
+        },
+        {
+          "value": 142,
+          "name": "RejectNewprotocol",
+          "description": "Reject newprotocol."
+        },
+        {
+          "value": 143,
+          "name": "RejectInvalidconnection",
+          "description": "Reject invalidconnection."
+        },
+        {
+          "value": 144,
+          "name": "RejectInvalidcertlen",
+          "description": "Reject invalidcertlen."
+        },
+        {
+          "value": 145,
+          "name": "RejectInvalidsteamcertlen",
+          "description": "Reject invalidsteamcertlen."
+        },
+        {
+          "value": 146,
+          "name": "RejectSteam",
+          "description": "Reject steam."
+        },
+        {
+          "value": 147,
+          "name": "RejectServerauthdisabled",
+          "description": "Reject serverauthdisabled."
+        },
+        {
+          "value": 148,
+          "name": "RejectServercdkeyauthinvalid",
+          "description": "Reject servercdkeyauthinvalid."
+        },
+        {
+          "value": 149,
+          "name": "RejectBanned",
+          "description": "Reject banned."
+        },
+        {
+          "value": 150,
+          "name": "KickedTeamkilling",
+          "description": "Kicked teamkilling."
+        },
+        {
+          "value": 151,
+          "name": "KickedTkStart",
+          "description": "Kicked tk start."
+        },
+        {
+          "value": 152,
+          "name": "KickedUntrustedaccount",
+          "description": "Kicked untrustedaccount."
+        },
+        {
+          "value": 153,
+          "name": "KickedConvictedaccount",
+          "description": "Kicked convictedaccount."
+        },
+        {
+          "value": 154,
+          "name": "KickedCompetitivecooldown",
+          "description": "Kicked competitivecooldown."
+        },
+        {
+          "value": 155,
+          "name": "KickedTeamhurting",
+          "description": "Kicked teamhurting."
+        },
+        {
+          "value": 156,
+          "name": "KickedHostagekilling",
+          "description": "Kicked hostagekilling."
+        },
+        {
+          "value": 157,
+          "name": "KickedVotedoff",
+          "description": "Kicked votedoff."
+        },
+        {
+          "value": 158,
+          "name": "KickedIdle",
+          "description": "Kicked idle."
+        },
+        {
+          "value": 159,
+          "name": "KickedSuicide",
+          "description": "Kicked suicide."
+        },
+        {
+          "value": 160,
+          "name": "KickedNosteamlogin",
+          "description": "Kicked nosteamlogin."
+        },
+        {
+          "value": 161,
+          "name": "KickedNosteamticket",
+          "description": "Kicked nosteamticket."
+        },
+        {
+          "value": 162,
+          "name": "KickedInputautomation",
+          "description": "Kicked inputautomation."
+        },
+        {
+          "value": 163,
+          "name": "KickedVacnetabnormalbehavior",
+          "description": "Kicked vacnetabnormalbehavior."
+        },
+        {
+          "value": 164,
+          "name": "KickedInsecureclient",
+          "description": "Kicked insecureclient."
+        }
+      ]
+    },
+    {
+      "name": "ConVarFlag",
+      "description": "Enum representing various flags for ConVars and ConCommands.",
+      "values": [
+        {
+          "value": 0,
+          "name": "None",
+          "description": "The default, no flags at all."
+        },
+        {
+          "value": 1,
+          "name": "LinkedConcommand",
+          "description": "Linked to a ConCommand."
+        },
+        {
+          "value": 2,
+          "name": "DevelopmentOnly",
+          "description": "Hidden in released products. Automatically removed if ALLOW_DEVELOPMENT_CVARS is defined."
+        },
+        {
+          "value": 4,
+          "name": "GameDll",
+          "description": "Defined by the game DLL."
+        },
+        {
+          "value": 8,
+          "name": "ClientDll",
+          "description": "Defined by the client DLL."
+        },
+        {
+          "value": 16,
+          "name": "Hidden",
+          "description": "Hidden. Doesn't appear in find or auto-complete. Like DEVELOPMENTONLY but cannot be compiled out."
+        },
+        {
+          "value": 32,
+          "name": "Protected",
+          "description": "Server cvar; data is not sent since it's sensitive (e.g., passwords)."
+        },
+        {
+          "value": 64,
+          "name": "SpOnly",
+          "description": "This cvar cannot be changed by clients connected to a multiplayer server."
+        },
+        {
+          "value": 128,
+          "name": "Archive",
+          "description": "Saved to vars.rc."
+        },
+        {
+          "value": 256,
+          "name": "Notify",
+          "description": "Notifies players when changed."
+        },
+        {
+          "value": 512,
+          "name": "UserInfo",
+          "description": "Changes the client's info string."
+        },
+        {
+          "value": 1024,
+          "name": "Missing0",
+          "description": "Hides the cvar from lookups."
+        },
+        {
+          "value": 2048,
+          "name": "Unlogged",
+          "description": "If this is a server cvar, changes are not logged to the file or console."
+        },
+        {
+          "value": 4096,
+          "name": "Missing1",
+          "description": "Hides the cvar from lookups."
+        },
+        {
+          "value": 8192,
+          "name": "Replicated",
+          "description": "Server-enforced setting on clients."
+        },
+        {
+          "value": 16384,
+          "name": "Cheat",
+          "description": "Only usable in singleplayer/debug or multiplayer with sv_cheats."
+        },
+        {
+          "value": 32768,
+          "name": "PerUser",
+          "description": "Causes auto-generated varnameN for splitscreen slots."
+        },
+        {
+          "value": 65536,
+          "name": "Demo",
+          "description": "Records this cvar when starting a demo file."
+        },
+        {
+          "value": 131072,
+          "name": "DontRecord",
+          "description": "Excluded from demo files."
+        },
+        {
+          "value": 262144,
+          "name": "Missing2",
+          "description": "Reserved for future use."
+        },
+        {
+          "value": 524288,
+          "name": "Release",
+          "description": "Cvars tagged with this are available to customers."
+        },
+        {
+          "value": 1048576,
+          "name": "MenuBarItem",
+          "description": "Marks the cvar as a menu bar item."
+        },
+        {
+          "value": 2097152,
+          "name": "Missing3",
+          "description": "Reserved for future use."
+        },
+        {
+          "value": 4194304,
+          "name": "NotConnected",
+          "description": "Cannot be changed by a client connected to a server."
+        },
+        {
+          "value": 8388608,
+          "name": "VconsoleFuzzyMatching",
+          "description": "Enables fuzzy matching for vconsole."
+        },
+        {
+          "value": 16777216,
+          "name": "ServerCanExecute",
+          "description": "The server can execute this command on clients."
+        },
+        {
+          "value": 33554432,
+          "name": "ClientCanExecute",
+          "description": "Allows clients to execute this command."
+        },
+        {
+          "value": 67108864,
+          "name": "ServerCannotQuery",
+          "description": "The server cannot query this cvar's value."
+        },
+        {
+          "value": 134217728,
+          "name": "VconsoleSetFocus",
+          "description": "Sets focus in the vconsole."
+        },
+        {
+          "value": 268435456,
+          "name": "ClientCmdCanExecute",
+          "description": "IVEngineClient::ClientCmd can execute this command."
+        },
+        {
+          "value": 536870912,
+          "name": "ExecutePerTick",
+          "description": "Executes the cvar every tick."
+        }
+      ]
+    },
+    {
+      "name": "ConCommandContext",
+      "description": "The command execution context.",
+      "values": [
+        {
+          "value": 0,
+          "name": "Console",
+          "description": "The command execute from the client's console."
+        },
+        {
+          "value": 1,
+          "name": "Chat",
+          "description": "The command execute from the client's chat."
+        }
+      ]
+    },
+    {
+      "name": "ResultType",
+      "description": "Enum representing the possible results of an operation.",
+      "values": [
+        {
+          "value": 0,
+          "name": "Continue",
+          "description": "The action continues to be processed without interruption."
+        },
+        {
+          "value": 1,
+          "name": "Changed",
+          "description": "Indicates that the action has altered the state or behavior during execution."
+        },
+        {
+          "value": 2,
+          "name": "Handled",
+          "description": "The action has been successfully handled, and no further action is required."
+        },
+        {
+          "value": 3,
+          "name": "Stop",
+          "description": "The action processing is halted, and no further steps will be executed."
+        }
+      ]
+    },
+    {
+      "name": "HookMode",
+      "description": "Enum representing the type of callback.",
+      "values": [
+        {
+          "name": "Pre",
+          "description": "Callback will be executed before the original function",
+          "value": 0
+        },
+        {
+          "name": "Post",
+          "description": "Callback will be executed after the original function",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "EventHookError",
+      "description": "Enum representing the type of callback.",
+      "values": [
+        {
+          "name": "Okay",
+          "description": "Indicates that the event hook was successfully created.",
+          "value": 0
+        },
+        {
+          "name": "InvalidEvent",
+          "description": "Indicates that the event name provided is invalid or does not exist.",
+          "value": 1
+        },
+        {
+          "name": "NotActive",
+          "description": "Indicates that the event system is not currently active or initialized.",
+          "value": 2
+        },
+        {
+          "name": "InvalidCallback",
+          "description": "Indicates that the callback function provided is invalid or not compatible with the event system.",
+          "value": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/tags/v3.1.0/schemas/plugin.schema.json",
+  "version": "0.1.0",
+  "name": "imomoe_admin",
+  "description": "CS2 server moderation and community commands",
+  "entry": "bin/imomoe_admin",
+  "platforms": [],
+  "language": "rust",
+  "dependencies": [
+    {
+      "name": "s2sdk",
+      "constraints": ">=3.4.3"
+    },
+    {
+      "name": "permissions",
+      "constraints": ">=1.3.1"
+    },
+    {
+      "name": "permissions_connector_s2"
+    },
+    {
+      "name": "imomoe_chat_prefix",
+      "constraints": ">=0.1.0",
+      "optional": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "IsClientMuted",
+      "funcName": "IsClientMuted",
+      "paramTypes": [
+        {
+          "name": "slot",
+          "type": "int32"
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "IsClientGagged",
+      "funcName": "IsClientGagged",
+      "paramTypes": [
+        {
+          "name": "slot",
+          "type": "int32"
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "IsAdminHidden",
+      "funcName": "IsAdminHidden",
+      "paramTypes": [
+        {
+          "name": "slot",
+          "type": "int32"
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "CanTarget",
+      "funcName": "CanTarget",
+      "paramTypes": [
+        {
+          "name": "actorSlot",
+          "type": "int32"
+        },
+        {
+          "name": "targetSlot",
+          "type": "int32"
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "KickClient",
+      "funcName": "KickClient",
+      "paramTypes": [
+        {
+          "name": "slot",
+          "type": "int32"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "ref": true
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "ApplyBan",
+      "funcName": "ApplyBan",
+      "paramTypes": [
+        {
+          "name": "actorSlot",
+          "type": "int32"
+        },
+        {
+          "name": "targetSlot",
+          "type": "int32"
+        },
+        {
+          "name": "minutes",
+          "type": "int32"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "ref": true
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "ApplyMute",
+      "funcName": "ApplyMute",
+      "paramTypes": [
+        {
+          "name": "actorSlot",
+          "type": "int32"
+        },
+        {
+          "name": "targetSlot",
+          "type": "int32"
+        },
+        {
+          "name": "minutes",
+          "type": "int32"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "ref": true
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "NotifyAdmins",
+      "funcName": "NotifyAdmins",
+      "paramTypes": [
+        {
+          "name": "message",
+          "type": "string",
+          "ref": true
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "OwnsClientNoclip",
+      "funcName": "OwnsClientNoclip",
+      "paramTypes": [
+        {
+          "name": "slot",
+          "type": "int32"
+        },
+        {
+          "name": "pawnHandle",
+          "type": "int32"
+        }
+      ],
+      "retType": {
+        "type": "bool"
+      }
+    }
+  ],
+  "author": "Imomoe Community",
+  "license": "AGPL-3.0-or-later",
+  "website": "https://github.com/Mai-Ooizumi"
+}

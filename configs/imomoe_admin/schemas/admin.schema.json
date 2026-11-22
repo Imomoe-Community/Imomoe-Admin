@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "storage",
+    "default_ban",
+    "default_comms",
+    "allow_self",
+    "hide_on_join",
+    "cvar_allowlist",
+    "report_cooldown_seconds",
+    "audit_log"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "storage": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "driver",
+            "path"
+          ],
+          "properties": {
+            "driver": {
+              "const": "sqlite"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "not": { "pattern": "^/|(^|/)\\.\\.(/|$)|^\\.(/|$)" },
+              "description": "Relative path within the instance data directory. The loader checks path components on the host OS."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "driver"
+          ],
+          "properties": {
+            "driver": {
+              "const": "file"
+            }
+          }
+        }
+      ]
+    },
+    "default_ban": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*[mhdw])(?![\\s\\S])",
+      "description": "0 is permanent. The loader checks whether the duration fits in seconds."
+    },
+    "default_comms": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*[mhdw])(?![\\s\\S])",
+      "description": "0 is permanent. The loader checks whether the duration fits in seconds."
+    },
+    "allow_self": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "hide_on_join": {
+      "type": "boolean"
+    },
+    "cvar_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]+(?![\\s\\S])"
+      },
+      "uniqueItems": true
+    },
+    "report_cooldown_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 18446744073709551615
+    },
+    "audit_log": {
+      "type": "boolean"
+    }
+  }
+}

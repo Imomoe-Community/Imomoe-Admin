@@ -1,0 +1,114 @@
+diff --git a/internal/events.go b/internal/events.go
+--- a/internal/events.go
++++ b/internal/events.go
+@@ -40,7 +40,7 @@
+ 		return false
+ 	}
+ 
+-	user, err := p.storage.LoadUser(ctx, targetID, username)
++	user, err := p.storage.LoadUser(ctx, targetID, username, offline)
+ 	if err != nil {
+ 		p.log.Errorf("Error loading user: %v", err)
+ 		return false
+diff --git a/internal/storage/mysql/user.go b/internal/storage/mysql/user.go
+--- a/internal/storage/mysql/user.go
++++ b/internal/storage/mysql/user.go
+@@ -20,7 +20,7 @@
+ 	value  any
+ }
+ 
+-func (s *Storage) LoadUser(ctx context.Context, UserID model.UserID, username string) (*model.User, error) {
++func (s *Storage) LoadUser(ctx context.Context, UserID model.UserID, username string, offline bool) (*model.User, error) {
+ 	tx, err := s.db.BeginTx(ctx, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("begin tx: %w", err)
+@@ -32,14 +32,14 @@
+ 		INSERT INTO users (steamid64, name, immunity, lastvisit_at)
+ 		VALUES (?, ?, 0, ?)
+ 		ON DUPLICATE KEY UPDATE
+-			name = VALUES(name),
+-			lastvisit_at = VALUES(lastvisit_at)
++			name = CASE WHEN ? THEN name ELSE VALUES(name) END,
++			lastvisit_at = CASE WHEN ? THEN lastvisit_at ELSE VALUES(lastvisit_at) END
+ 		RETURNING immunity
+ 	`
+ 
+ 	user := new(model.User{UserID: UserID, Name: username})
+ 
+-	row := tx.QueryRowContext(ctx, query, UserID, username, time.Now())
++	row := tx.QueryRowContext(ctx, query, UserID, username, time.Now(), offline, offline)
+ 	if err = row.Scan(&user.Immunity); err != nil {
+ 		return nil, fmt.Errorf("failed to load user: %w", err)
+ 	}
+diff --git a/internal/storage/postgres/user.go b/internal/storage/postgres/user.go
+--- a/internal/storage/postgres/user.go
++++ b/internal/storage/postgres/user.go
+@@ -20,7 +20,7 @@
+ 	value  any
+ }
+ 
+-func (s *Storage) LoadUser(ctx context.Context, UserID model.UserID, username string) (*model.User, error) {
++func (s *Storage) LoadUser(ctx context.Context, UserID model.UserID, username string, offline bool) (*model.User, error) {
+ 	tx, err := s.db.BeginTx(ctx, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("begin tx: %w", err)
+@@ -32,14 +32,14 @@
+ 		INSERT INTO users (steamid64, name, immunity, lastvisit_at)
+ 		VALUES ($1, $2, 0, $3)
+ 		ON CONFLICT (steamid64) DO UPDATE SET
+-			name = EXCLUDED.name,
+-			lastvisit_at = EXCLUDED.lastvisit_at
++			name = CASE WHEN $4 THEN users.name ELSE EXCLUDED.name END,
++			lastvisit_at = CASE WHEN $4 THEN users.lastvisit_at ELSE EXCLUDED.lastvisit_at END
+ 		RETURNING immunity
+ 	`
+ 
+ 	user := new(model.User{UserID: UserID, Name: username})
+ 
+-	row := tx.QueryRowContext(ctx, query, UserID, username, time.Now())
++	row := tx.QueryRowContext(ctx, query, UserID, username, time.Now(), offline)
+ 	if err = row.Scan(&user.Immunity); err != nil {
+ 		return nil, fmt.Errorf("failed to load user: %w", err)
+ 	}
+diff --git a/internal/storage/sqlite/user.go b/internal/storage/sqlite/user.go
+--- a/internal/storage/sqlite/user.go
++++ b/internal/storage/sqlite/user.go
+@@ -20,7 +20,7 @@
+ 	value  any
+ }
+ 
+-func (s *Storage) LoadUser(ctx context.Context, UserID model.UserID, username string) (*model.User, error) {
++func (s *Storage) LoadUser(ctx context.Context, UserID model.UserID, username string, offline bool) (*model.User, error) {
+ 	tx, err := s.db.BeginTx(ctx, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("begin tx: %w", err)
+@@ -32,14 +32,14 @@
+ 		INSERT INTO users (steamid64, name, immunity, lastvisit_at)
+ 		VALUES (?, ?, 0, ?)
+ 		ON CONFLICT (steamid64) DO UPDATE SET
+-			name = excluded.name,
+-			lastvisit_at = excluded.lastvisit_at
++			name = CASE WHEN ?4 THEN users.name ELSE excluded.name END,
++			lastvisit_at = CASE WHEN ?4 THEN users.lastvisit_at ELSE excluded.lastvisit_at END
+ 		RETURNING immunity
+ 	`
+ 
+ 	user := new(model.User{UserID: UserID, Name: username})
+ 
+-	row := tx.QueryRowContext(ctx, query, UserID, username, time.Now().UTC())
++	row := tx.QueryRowContext(ctx, query, UserID, username, time.Now().UTC(), offline)
+ 	if err = row.Scan(&user.Immunity); err != nil {
+ 		return nil, fmt.Errorf("failed to load user: %w", err)
+ 	}
+diff --git a/internal/storage/storage.go b/internal/storage/storage.go
+--- a/internal/storage/storage.go
++++ b/internal/storage/storage.go
+@@ -23,7 +23,7 @@
+ }
+ 
+ type User interface {
+-	LoadUser(ctx context.Context, userID model.UserID, username string) (user *model.User, err error)
++	LoadUser(ctx context.Context, userID model.UserID, username string, offline bool) (user *model.User, err error)
+ 	//RemoveUser(ctx context.Context, user *model.User) error
+ 	AddUserPermission(ctx context.Context, userID model.UserID, permission *model.UserPermission, wildcard bool) error
+ 	RemoveUserPermission(ctx context.Context, userID model.UserID, permission *model.UserPermission) error

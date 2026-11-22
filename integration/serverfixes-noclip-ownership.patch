@@ -1,0 +1,42 @@
+diff --git a/src/compat_guards.cpp b/src/compat_guards.cpp
+--- a/src/compat_guards.cpp
++++ b/src/compat_guards.cpp
+@@ -12,6 +12,14 @@
+ #include <random>
+ #include <string_view>
+ #include <unordered_map>
++
++#include <plugin_export.h>
++
++// Optional Plugify import. Only this exact current pawn can be exempted
++// from the cheats-off repair; ordinary engine noclip is still cleared.
++extern "C" {
++PLUGIN_API bool (*__imomoe_admin_OwnsClientNoclip)(int, int) = nullptr;
++}
+ 
+ namespace imomoe::server_fixes::compat_guards {
+ namespace {
+@@ -116,7 +124,7 @@
+ 		}
+ 		const int handle = PlayerPawnHandle( controller );
+ 		auto* pawn = s2sdk::EntHandleToEntPointer( handle );
+-		if ( !pawn ) {
++		if ( !pawn || ( __imomoe_admin_OwnsClientNoclip && __imomoe_admin_OwnsClientNoclip( slot, handle ) ) ) {
+ 			continue;
+ 		}
+ 		if ( s2sdk::GetEntityMoveType( handle ) != s2sdk::MoveType::Noclip &&
+diff --git a/imomoe_server_fixes.pplugin b/imomoe_server_fixes.pplugin
+--- a/imomoe_server_fixes.pplugin
++++ b/imomoe_server_fixes.pplugin
+@@ -17,6 +17,11 @@
+     {
+       "name": "polyhook",
+       "constraints": ">=2.5.9"
++    },
++    {
++      "name": "imomoe_admin",
++      "constraints": ">=0.1.0",
++      "optional": true
+     }
+   ],
+   "methods": [

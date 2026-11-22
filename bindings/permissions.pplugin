@@ -1,0 +1,251 @@
+{
+  "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
+  "version": "1.3.1",
+  "name": "permissions",
+  "description": "Minimalistic permissions core",
+  "author": "untrustedmodders",
+  "website": "https://github.com/untrustedmodders/",
+  "license": "MIT",
+  "entry": "bin/plugify-plugin-permissions",
+  "platforms": [],
+  "language": "cpp",
+  "dependencies": [],
+  "methods": [
+    {
+      "name": "CanAffectUser",
+      "funcName": "CanAffectUser",
+      "paramTypes": [
+        {
+          "name": "actorID",
+          "type": "uint64",
+          "ref": false,
+          "description": "Player performing the action"
+        },
+        {
+          "name": "targetID",
+          "type": "uint64",
+          "ref": false,
+          "description": "Player receiving the action"
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "Allow, Disallow, ActorUserNotFound, or TargetUserNotFound",
+        "enum": "Status"
+      },
+      "group": "User",
+      "description": "Check players immunity or groups priority"
+    },
+    {
+      "name": "HasPermission",
+      "funcName": "HasPermission",
+      "paramTypes": [
+        {
+          "name": "targetID",
+          "type": "uint64",
+          "ref": false,
+          "description": "Player ID."
+        },
+        {
+          "name": "perm",
+          "type": "string",
+          "ref": false,
+          "description": "Permission line."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "description": "Allow, Disallow, PermNotFound, TargetUserNotFound",
+        "enum": "Status"
+      },
+      "group": "User",
+      "description": "Check if a user has a specific permission."
+    },
+    {
+      "name": "LoadUser",
+      "funcName": "LoadUser",
+      "paramTypes": [
+        {
+          "name": "pluginID",
+          "type": "int64",
+          "ref": false,
+          "description": "Identifier of the calling plugin."
+        },
+        {
+          "name": "targetID",
+          "type": "uint64",
+          "ref": false,
+          "description": "PlayerID of the user to be loaded."
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "ref": false,
+          "description": "The user's current username. Intended for synchronizing the username with external storage (e.g. updating an existing record or setting it during initial user creation)."
+        },
+        {
+          "name": "offline",
+          "type": "bool",
+          "ref": false,
+          "description": "Indicates whether the user's data was loaded without user presence on server."
+        },
+        {
+          "name": "dontBroadcast",
+          "type": "bool",
+          "ref": false,
+          "description": "If set to `true`, suppresses dispatching of the OnUserLoaded event."
+        }
+      ],
+      "retType": {
+        "type": "int32",
+        "enum": "Status",
+        "description": "Success, DBNotReady"
+      },
+      "group": "User",
+      "description": "Dispatches a request to load user data."
+    }
+  ],
+  "enums": [
+    {
+      "name": "Status",
+      "description": "Result codes returned by the API. Values after ErrorsStart are errors.",
+      "values": [
+        {
+          "name": "Success",
+          "value": 0,
+          "description": "Operation completed successfully."
+        },
+        {
+          "name": "Allow",
+          "value": 1,
+          "description": "Permission is allowed."
+        },
+        {
+          "name": "Disallow",
+          "value": 2,
+          "description": "Permission is explicitly denied."
+        },
+        {
+          "name": "PermNotFound",
+          "value": 3,
+          "description": "Permission is not defined."
+        },
+        {
+          "name": "TemporalGroup",
+          "value": 4,
+          "description": "User has the group temporarily."
+        },
+        {
+          "name": "PermanentGroup",
+          "value": 5,
+          "description": "User has the group permanently."
+        },
+        {
+          "name": "GroupNotDefined",
+          "value": 6,
+          "description": "User doesn't have the group."
+        },
+        {
+          "name": "ErrorsStart",
+          "value": 30,
+          "description": "Marker: every value greater than this is an error."
+        },
+        {
+          "name": "PermAlreadyGranted",
+          "value": 31,
+          "description": "Permission already exists with the same state, or conflicts with an existing wildcard."
+        },
+        {
+          "name": "CookieNotFound",
+          "value": 32,
+          "description": "Cookie (user) or option (group) is not set."
+        },
+        {
+          "name": "GroupNotFound",
+          "value": 33,
+          "description": "Group doesn't exist."
+        },
+        {
+          "name": "ChildGroupNotFound",
+          "value": 34,
+          "description": "Child group doesn't exist."
+        },
+        {
+          "name": "ParentGroupNotFound",
+          "value": 35,
+          "description": "Parent group doesn't exist, or the group has no parent."
+        },
+        {
+          "name": "GroupAlreadyExist",
+          "value": 36,
+          "description": "Group already exists, or the user already has it."
+        },
+        {
+          "name": "GroupHierarchyCycle",
+          "value": 37,
+          "description": "Setting the parent would create a cycle in the group hierarchy."
+        },
+        {
+          "name": "ActorUserNotFound",
+          "value": 38,
+          "description": "Actor user is not loaded."
+        },
+        {
+          "name": "TargetUserNotFound",
+          "value": 39,
+          "description": "Target user is not loaded."
+        },
+        {
+          "name": "UserAlreadyExist",
+          "value": 40,
+          "description": "User is already loaded."
+        },
+        {
+          "name": "CallbackInvalid",
+          "value": 41,
+          "description": "Callback is null."
+        },
+        {
+          "name": "CallbackAlreadyExist",
+          "value": 42,
+          "description": "Callback is already registered."
+        },
+        {
+          "name": "CallbackNotFound",
+          "value": 43,
+          "description": "Callback is not registered."
+        },
+        {
+          "name": "StorageError",
+          "value": 44,
+          "description": "Storage error."
+        },
+        {
+          "name": "DBNotReady",
+          "value": 45,
+          "description": "A storage callback rejected the change (storage not ready or failed). The change wasn't applied."
+        },
+        {
+          "name": "InvalidPermission",
+          "value": 46,
+          "description": "Permission line is malformed (empty, empty segment, or '*' not as the last segment)."
+        },
+        {
+          "name": "InvalidGroupName",
+          "value": 47,
+          "description": "Group name is empty."
+        },
+        {
+          "name": "InvalidCookieName",
+          "value": 48,
+          "description": "Cookie or option name is empty."
+        },
+        {
+          "name": "PermConflict",
+          "value": 49,
+          "description": "Permission already exists with the opposite state. Use Set* to change it."
+        }
+      ]
+    }
+  ]
+}

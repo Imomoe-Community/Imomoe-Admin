@@ -1,0 +1,17 @@
+[package]
+name = "imomoe-admin-plugin"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "imomoe_admin"
+crate-type = ["cdylib"]
+
+[dependencies]
+imomoe-admin-core = { path = "../admin-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+jsonc-parser = { version = "0.34", features = ["serde"] }
+tempfile = "3"
+rusqlite = { version = "0.40", features = ["bundled"] }
+plugify = { git = "https://github.com/untrustedmodders/rust-plugify", rev = "5f7d5f4f2821dd3e47a4254d2bfe1db6ec08c9aa" }

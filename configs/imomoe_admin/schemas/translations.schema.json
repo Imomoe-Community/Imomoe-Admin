@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "denied",
+    "bad_duration",
+    "not_found",
+    "ambiguous",
+    "blocked",
+    "group_forbidden",
+    "unknown_selector",
+    "usage",
+    "failed",
+    "sent",
+    "report_cooldown",
+    "player_only",
+    "no_admins",
+    "hide_on",
+    "hide_off",
+    "reloaded",
+    "permanent",
+    "no_comms",
+    "mute",
+    "gag",
+    "ban_page",
+    "no_bans",
+    "queued",
+    "cvar_denied",
+    "no_change",
+    "needs_steam",
+    "default_reason",
+    "done",
+    "moderation",
+    "report_prefix",
+    "admin_prefix",
+    "expires_unix",
+    "banned",
+    "gagged",
+    "kick_reason",
+    "permissions_unavailable",
+    "permissions_loading",
+    "admission_unavailable"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "denied": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bad_duration": {
+      "type": "string",
+      "minLength": 1
+    },
+    "not_found": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ambiguous": {
+      "type": "string",
+      "minLength": 1
+    },
+    "blocked": {
+      "type": "string",
+      "minLength": 1
+    },
+    "group_forbidden": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unknown_selector": {
+      "type": "string",
+      "minLength": 1
+    },
+    "usage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failed": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "report_cooldown": {
+      "type": "string",
+      "minLength": 1
+    },
+    "player_only": {
+      "type": "string",
+      "minLength": 1
+    },
+    "no_admins": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hide_on": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hide_off": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reloaded": {
+      "type": "string",
+      "minLength": 1
+    },
+    "permanent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "no_comms": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mute": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gag": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ban_page": {
+      "type": "string",
+      "minLength": 1
+    },
+    "no_bans": {
+      "type": "string",
+      "minLength": 1
+    },
+    "queued": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cvar_denied": {
+      "type": "string",
+      "minLength": 1
+    },
+    "no_change": {
+      "type": "string",
+      "minLength": 1
+    },
+    "needs_steam": {
+      "type": "string",
+      "minLength": 1
+    },
+    "default_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "done": {
+      "type": "string",
+      "minLength": 1
+    },
+    "moderation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "report_prefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "admin_prefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expires_unix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "banned": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gagged": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kick_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "permissions_unavailable": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "permissions_loading": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "admission_unavailable": {
+      "minLength": 1,
+      "type": "string"
+    }
+  }
+}

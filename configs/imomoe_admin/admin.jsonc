@@ -1,0 +1,11 @@
+{
+  "$schema": "./schemas/admin.schema.json",
+  "storage": { "driver": "sqlite", "path": "data/imomoe_admin.db" },
+  "default_ban": "7d",
+  "default_comms": "10m",
+  "allow_self": ["noclip", "respawn", "slap"],
+  "hide_on_join": false,
+  "cvar_allowlist": [],
+  "report_cooldown_seconds": 60,
+  "audit_log": true
+}

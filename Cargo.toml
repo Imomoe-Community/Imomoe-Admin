@@ -1,0 +1,10 @@
+[workspace]
+members = ["crates/admin-core", "crates/admin-plugin"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[profile.release]
+panic = "unwind"

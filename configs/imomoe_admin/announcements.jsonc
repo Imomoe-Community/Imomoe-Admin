@@ -1,0 +1,7 @@
+{
+  "$schema": "./schemas/announcements.schema.json",
+  "interval_seconds": 180,
+  "messages": [],
+  "rules": ["Respect other players. Use !report to contact online admins."],
+  "help": ["!admins · !report <message> · !rules · !comms"]
+}

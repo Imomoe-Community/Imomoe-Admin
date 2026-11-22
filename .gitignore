@@ -1,0 +1,33 @@
+# Build, temporary, and packaging artifacts
+/target/
+/data/
+/.work/
+/.tmp/
+/dist/
+/local/
+
+# Runtime state and private overrides (keep configs/imomoe_admin/ defaults tracked)
+*.db
+*.db-*
+*.sqlite*
+*.log
+*.local.jsonc
+*.private.jsonc
+/secrets/
+
+# Editor and IDE directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating system artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Sensitive runtime configurations and secrets
+/.env
+/.env.*
+!/.env.example

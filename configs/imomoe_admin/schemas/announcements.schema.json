@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "interval_seconds",
+    "messages",
+    "rules",
+    "help"
+  ],
+  "if": {
+    "properties": { "messages": { "minItems": 1 } }
+  },
+  "then": {
+    "properties": { "interval_seconds": { "minimum": 1 } }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "interval_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 18446744073709551615
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "help": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
