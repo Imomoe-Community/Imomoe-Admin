@@ -29,22 +29,6 @@
   ],
   "methods": [
     {
-      "name": "GetClientUserID",
-      "group": "Clients",
-      "description": "Returns the current engine userid, or -1 for a disconnected or invalid slot.",
-      "funcName": "GetClientUserID",
-      "paramTypes": [
-        {
-          "name": "playerSlot",
-          "type": "int32",
-          "ref": false
-        }
-      ],
-      "retType": {
-        "type": "int32"
-      }
-    },
-    {
       "name": "GetClientSteamID64",
       "group": "Clients",
       "description": "Returns the client's SteamID64 - a unique 64-bit identifier of a Steam account.",

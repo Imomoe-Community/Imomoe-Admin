@@ -1,4 +1,4 @@
-use crate::{permissions as perm, s2sdk as sdk};
+use crate::{imomoe_native_base as native, permissions as perm, s2sdk as sdk};
 use imomoe_admin_core::target::{Actor, Player, Team, steam_id};
 use plugify::Str;
 
@@ -82,7 +82,7 @@ pub fn players() -> Vec<Player> {
         .filter(|&slot| online(slot))
         .map(|slot| Player {
             slot,
-            user_id: sdk::GetClientUserID(slot),
+            user_id: native::GetClientUserID(slot),
             steam_id: account(slot),
             name: clean(sdk::GetClientName(slot).as_str()),
             team: match sdk::GetClientTeam(slot) {
@@ -197,8 +197,9 @@ pub fn require_bindings() -> Result<(), Box<dyn std::error::Error>> {
         __s2sdk_SetClientAbsOrigin, __s2sdk_GetEntityMoveType, __s2sdk_SetEntityMoveType,
         __s2sdk_IsValidEntHandle, __s2sdk_FindConVar, __s2sdk_IsConVarFlagSet,
         __s2sdk_GetConVarValue, __s2sdk_SetConVarValue, __s2sdk_ServerCommand,
-        __s2sdk_HookEvent, __s2sdk_UnhookEvent, __s2sdk_GetEventPlayerSlot, __s2sdk_IsClientAuthorized, __s2sdk_GetClientUserID
+        __s2sdk_HookEvent, __s2sdk_UnhookEvent, __s2sdk_GetEventPlayerSlot, __s2sdk_IsClientAuthorized
     );
+    require!(native: __imomoe_native_base_GetClientUserID);
     require!(perm: __permissions_HasPermission, __permissions_CanAffectUser, __permissions_LoadUser);
     Ok(())
 }

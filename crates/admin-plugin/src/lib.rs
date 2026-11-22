@@ -3,6 +3,9 @@ mod acceptance_tests;
 mod config;
 mod dispatch;
 mod engine;
+#[allow(dead_code)]
+#[path = "generated/src/imomoe_native_base/mod.rs"]
+mod imomoe_native_base;
 #[allow(dead_code, non_camel_case_types)]
 #[path = "generated/src/permissions/mod.rs"]
 mod permissions;

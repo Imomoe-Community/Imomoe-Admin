@@ -229,7 +229,7 @@ impl Session {
             sdk::__s2sdk_IsClientSourceTV = Some(not_in_game);
             sdk::__s2sdk_IsFakeClient = Some(fake);
             sdk::__s2sdk_GetClientSteamID64 = Some(account);
-            sdk::__s2sdk_GetClientUserID = Some(user_id);
+            admin::imomoe_native_base::__imomoe_native_base_GetClientUserID = Some(user_id);
             sdk::__s2sdk_GetClientName = Some(name);
             sdk::__s2sdk_GetClientTeam = Some(team);
             sdk::__s2sdk_IsClientAlive = Some(alive);

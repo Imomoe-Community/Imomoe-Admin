@@ -27,7 +27,8 @@
 | Component | Requirement & Notes |
 | :--- | :--- |
 | **Plugify Host** | `v3.1.0+` with Plugify Rust & Go language modules, PolyHook, Configs, and Translations. |
-| **S2SDK** | `>=3.4.3`; [vanilla v3.4.3](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.4.3/plugify-plugin-s2sdk.pplugin.in) already provides `GetClientListening`, `SetClientListening`, and `ServerCommand`. Phase 1 also requires `GetClientUserID` (see [userid patch](integration/s2sdk-userid.patch), later moving to the shared C++ base) and `ForceRespawnClient`. |
+| **S2SDK** | Pinned fork `3.4.3@e2b88d3` (SourceSDK `92f0494`), including `ForceRespawnClient`. |
+| **NativeBase** | `imomoe_native_base 0.1.0` supplies the engine userid export. Admin can be installed without FunRounds. |
 | **Permissions** | `permissions >=1.3.1` and `permissions_connector_s2`. |
 | **ServerFixes (Optional)** | When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8` ([noclip ownership patch](integration/serverfixes-noclip-ownership.patch)). |
 | **Chat Prefix (Optional)** | [Imomoe Chat Prefix](https://github.com/Imomoe-Community/Imomoe-Chat-Prefix) (`imomoe_chat_prefix >=0.1.0`). When absent, rules, help, and scheduled announcements are sent unprefixed. |
@@ -43,21 +44,17 @@
 
 ### Installation
 
-1. Build release artifacts:
+1. Obtain the official [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify), [Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0), [C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5), [PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9), [Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2). Install the Admin permissions dependencies separately: [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases), [Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases), [Translations](https://github.com/untrustedmodders/plugify-plugin-translations/releases), [permissions-connector-s2](https://github.com/fr0nch/permissions-connector-s2/releases), [permissions-storage](https://github.com/fr0nch/permissions-storage/releases). Follow the Windows TLS requirement above; local acceptance DLLs are not supported release assets.
+2. Stop the server. For a first installation, install the matching-platform `s2sdk-fork-3.4.3-e2b88d3-<platform>.zip` and `imomoe-native-base-0.1.0-<platform>.zip` once, then copy the Admin ZIP's `game/` tree into the server root. The Admin ZIP does not supply the shared plugins or permissions components.
+3. If FunRounds already uses this exact dependency set, install only Admin and any missing permissions dependencies. Do not install another SDK or NativeBase. Use the pinned fork, not the identically named official SDK. Move the official SDK or old `funrounds_native` out of discovery before switching. Replacing official files and then running `mamba update --all` is not supported.
+4. Keep existing Admin configuration, storage and announcements. On rollback, stop the server and remove only Admin if the other consumer still uses the shared dependencies. To return to the old provider, restore the entire previous consumer/SDK/provider/configuration set.
 
-   ```bash
-   cargo build --release --workspace --locked
-   ```
+To build and package only Admin (Windows example):
 
-2. Place [imomoe_admin.pplugin](imomoe_admin.pplugin) and the compiled binary under `game/csgo/addons/plugify/envs/imomoe_admin/`:
-   - **Windows**: `target/release/imomoe_admin.dll` → `bin/imomoe_admin.dll`
-   - **Linux**: `target/release/libimomoe_admin.so` → `bin/libimomoe_admin.so`
-
-3. Copy `configs/imomoe_admin/` to `game/csgo/addons/plugify/configs/imomoe_admin/` (including `admin.jsonc`, `announcements.jsonc`, `translations/`, and `schemas/`).
-
-4. Keep `imomoe_admin`, `s2sdk`, and `imomoe_server_fixes` in separate plugin directories (`s2sdk.*.jsonc` alongside its manifest) and restart the server.
-
----
+```text
+cargo build --release --workspace --locked
+python scripts/package.py --platform windows-x64 --binary target/release/imomoe_admin.dll --archive dist/admin-windows-x64.zip
+```
 
 ### Usage & Target Resolution
 

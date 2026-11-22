@@ -29,7 +29,8 @@
 | 组件 / <sub><sup>Component</sup></sub> | 版本与说明 / <sub><sup>Requirement & Notes</sup></sub> |
 | :--- | :--- |
 | **Plugify 框架**<br><sub><sup>Plugify Host</sup></sub> | `v3.1.0+`，需加载 Rust / Go 语言模块、PolyHook、Configs 与 Translations。<br><sub><sup>`v3.1.0+` with Rust and Go language modules, PolyHook, Configs, and Translations.</sup></sub> |
-| **S2SDK** | `>=3.4.3`；原版 [S2SDK v3.4.3](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.4.3/plugify-plugin-s2sdk.pplugin.in) 已含 `GetClientListening`、`SetClientListening` 与 `ServerCommand`，一期另需补充 `GetClientUserID`（见 [userid 补丁](integration/s2sdk-userid.patch)，后续迁入共享 C++ 底座）与 `ForceRespawnClient`。<br><sub><sup>`>=3.4.3`; vanilla v3.4.3 supplies `GetClientListening`, `SetClientListening`, and `ServerCommand`, while Phase 1 also requires `GetClientUserID` (see [userid patch](integration/s2sdk-userid.patch)) and `ForceRespawnClient`.</sup></sub> |
+| **S2SDK** | 固定 fork `3.4.3@e2b88d3`（SourceSDK `92f0494`），提供 `ForceRespawnClient`。<br><sub><sup>Use the pinned fork for `ForceRespawnClient`.</sup></sub> |
+| **NativeBase** | `imomoe_native_base 0.1.0` 提供 `GetClientUserID`。Admin 可独立安装，不需要 FunRounds。<br><sub><sup>Provides engine userid; FunRounds is not required.</sup></sub> |
 | **Permissions** | `permissions >=1.3.1` 与 `permissions_connector_s2`。<br><sub><sup>`permissions >=1.3.1` and `permissions_connector_s2`.</sup></sub> |
 | **ServerFixes（可选）**<br><sub><sup>ServerFixes (Optional)</sup></sub> | 若启用 `sf_noclip_reset 1`，需包含 `Imomoe-ServerFixes-CS2 main@67232f8`（已合入 [noclip 所有权补丁](integration/serverfixes-noclip-ownership.patch)）。<br><sub><sup>When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8` ([noclip ownership patch](integration/serverfixes-noclip-ownership.patch)).</sup></sub> |
 | **Chat Prefix（可选）**<br><sub><sup>Chat Prefix (Optional)</sup></sub> | [Imomoe Chat Prefix](https://github.com/Imomoe-Community/Imomoe-Chat-Prefix)（`imomoe_chat_prefix >=0.1.0`）；未安装时规则、帮助与定时公告以原文发送。<br><sub><sup>`imomoe_chat_prefix >=0.1.0`; when absent, rules, help, and scheduled announcements are sent without a prefix.</sup></sub> |
@@ -45,21 +46,17 @@
 
 ### 安装与部署 / Installation
 
-1. 在项目根目录构建发布产物 / Build release artifacts:
+1. 从官方来源准备 [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify)、[Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0)、[C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5)、[PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9)、[Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2)。Admin 另需 [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases), [Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases), [Translations](https://github.com/untrustedmodders/plugify-plugin-translations/releases), [permissions-connector-s2](https://github.com/fr0nch/permissions-connector-s2/releases), [permissions-storage](https://github.com/fr0nch/permissions-storage/releases)。Windows 权限组件须满足上面的 TLS 修补要求；本地验收 DLL 不作为正式依赖分发。
+2. 正常停服。首次安装时，按平台先装一次 `s2sdk-fork-3.4.3-e2b88d3-<platform>.zip` 和 `imomoe-native-base-0.1.0-<platform>.zip`，再把 Admin ZIP 的 `game/` 树复制到服务器根目录。Admin ZIP 不携带共享插件和权限组件。
+3. 若已安装同一配对的 FunRounds，只装 Admin 和缺少的权限组件，无需覆盖 SDK 或 NativeBase。过渡期加载固定 fork；切换前把官方同名 SDK 或旧 `funrounds_native` 移出扫描目录。覆盖官方文件后再运行 `mamba update --all` 不受支持。
+4. 保留现有配置、公告和数据。回退单独加装的 Admin 时停服撤下 Admin，保留其他消费者仍用的共享依赖。退回旧 provider 时还原整组旧消费者、SDK、provider 和配置。
 
-   ```bash
-   cargo build --release --workspace --locked
-   ```
+只构建并打包 Admin（Windows 示例）：
 
-2. 将 [imomoe_admin.pplugin](imomoe_admin.pplugin) 与动态库放入服务端 `game/csgo/addons/plugify/envs/imomoe_admin/` / Deploy manifest and binary:
-   - **Windows**：将 `target/release/imomoe_admin.dll` 放入 `bin/imomoe_admin.dll`。
-   - **Linux**：将 `target/release/libimomoe_admin.so` 放入 `bin/libimomoe_admin.so`。
-
-3. 将 `configs/imomoe_admin/` 复制到服务端 `game/csgo/addons/plugify/configs/imomoe_admin/`（含 `admin.jsonc`、`announcements.jsonc`、`translations/` 与 `schemas/`）。<br><sub><sup>Copy `configs/imomoe_admin/` to `game/csgo/addons/plugify/configs/imomoe_admin/`.</sup></sub>
-
-4. 将 `imomoe_admin`、`s2sdk` 与 `imomoe_server_fixes` 分别置于独立插件目录（`s2sdk.*.jsonc` 与其清单同级），重启服务端使插件生效。<br><sub><sup>Keep `imomoe_admin`, `s2sdk`, and `imomoe_server_fixes` in separate plugin directories and restart the server.</sup></sub>
-
----
+```text
+cargo build --release --workspace --locked
+python scripts/package.py --platform windows-x64 --binary target/release/imomoe_admin.dll --archive dist/admin-windows-x64.zip
+```
 
 ### 常用操作与目标选择 / Usage & Target Resolution
 

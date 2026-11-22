@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory)] [string] $Generator,
     [Parameter(Mandatory)] [string] $S2SdkManifest,
+    [Parameter(Mandatory)] [string] $NativeBaseManifest,
     [Parameter(Mandatory)] [string] $PermissionsManifest
 )
 $ErrorActionPreference = 'Stop'
@@ -20,13 +21,14 @@ $names = @{
         'SetClientHealth','ApplyAbsVelocityImpulseToClient','GetClientAbsOrigin','SetClientAbsOrigin',
         'GetEntityMoveType','SetEntityMoveType','IsValidEntHandle','FindConVar','IsConVarFlagSet',
         'GetConVarValue','SetConVarValue','ServerCommand','HookEvent','UnhookEvent',
-        'GetEventPlayerSlot','GetClientUserID'
+        'GetEventPlayerSlot'
     )
+    imomoe_native_base = @('GetClientUserID')
     permissions = @('HasPermission','CanAffectUser','LoadUser')
 }
 [IO.Directory]::CreateDirectory($bindingRoot) | Out-Null
-$inputs = @{s2sdk=$S2SdkManifest; permissions=$PermissionsManifest}
-foreach ($name in 's2sdk','permissions') {
+$inputs = @{s2sdk=$S2SdkManifest; permissions=$PermissionsManifest; imomoe_native_base=$NativeBaseManifest}
+foreach ($name in 's2sdk','permissions','imomoe_native_base') {
     $m = Get-Content -LiteralPath $inputs[$name] -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     if ($m.name -ne $name) { throw "Expected plugin '$name', got '$($m.name)'." }
     $m.methods = @($m.methods | Where-Object name -In $names[$name])
@@ -36,7 +38,7 @@ foreach ($name in 's2sdk','permissions') {
     if ($m.Contains('prototypes')) {
         $m.prototypes = @($m.prototypes | Where-Object name -In $neededPrototypes)
     }
-    $neededEnums = @(($m.methods.paramTypes + $m.methods.retType + $m.prototypes.paramTypes + $m.prototypes.retType) |
+    $neededEnums = @((@($m.methods.paramTypes) + @($m.methods.retType) + @($m.prototypes.paramTypes) + @($m.prototypes.retType)) |
         Where-Object enum | ForEach-Object enum)
     $m.enums = @($m.enums | Where-Object name -In $neededEnums)
     # Rust enums cannot declare multiple names for the same ABI discriminant.

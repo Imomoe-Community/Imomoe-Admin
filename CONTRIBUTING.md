@@ -33,6 +33,12 @@ pwsh -File ./scripts/validate-config.ps1
 cargo build --release --workspace --locked
 ```
 
+推送 `main` 和以 `main` 为目标的 PR 在 Windows/Linux 运行以上门禁，无需下载共享 ZIP。
+The Windows/Linux gates run on pushes and PRs targeting `main` without downloading the shared ZIPs.
+
+经授权手动运行 CI 时，组包步骤从 [NativeBase v0.1.0 Release](https://github.com/Imomoe-Community/Imomoe-NativeBase-CS2/releases/tag/v0.1.0) 下载同平台的 NativeBase 与 fork S2SDK ZIP，校验配对后只上传 `admin-<platform>.zip`。先确认两个平台的 Release 资产均可下载；NativeBase 的 Actions artifacts 不会自动出现在该地址。
+An approved manual CI run downloads the matching NativeBase and fork S2SDK ZIPs from that Release for pairing validation and uploads only `admin-<platform>.zip`. Both platforms' Release assets must be available first; NativeBase's Actions artifacts do not appear there automatically.
+
 ---
 
 ## 3. 核心设计与编码规范 / Architecture & Safety Contracts
@@ -48,7 +54,7 @@ cargo build --release --workspace --locked
 3. **配置与绑定维护 / Config & Bindings**：
    - 配置与双语翻译须符合 `configs/imomoe_admin/schemas/`，热重载仅在全部文件校验通过后替换状态。
    - Configs and translations must conform to `configs/imomoe_admin/schemas/`; reloads swap state atomically only when all files validate.
-   - 使用 `./scripts/generate-bindings.ps1 -Generator <plugify-gen> -S2SdkManifest <s2sdk.pplugin> -PermissionsManifest <permissions.pplugin>` 依据服务端清单更新绑定。
+   - 使用 `./scripts/generate-bindings.ps1 -Generator <plugify-gen> -S2SdkManifest <s2sdk.pplugin> -NativeBaseManifest <imomoe_native_base.pplugin> -PermissionsManifest <permissions.pplugin>` 依据服务端清单更新绑定。
 
 ---
 
