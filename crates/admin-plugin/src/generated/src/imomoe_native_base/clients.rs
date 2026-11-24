@@ -11,6 +11,24 @@ use plugify::{Arr, Mat4x4, Str, Var, Vec2, Vec3, Vec4, scope};
 #[allow(unused_imports)]
 use std::sync::RwLock;
 
+/// On the game thread, performs a full engine respawn for the slot, including a live player. Does nothing if the player pawn cannot be safely owned by the controller.
+///
+/// # Arguments
+/// * `playerSlot` - (int32)
+#[track_caller]
+#[allow(dead_code, non_snake_case)]
+pub fn ForceRespawnClient(playerSlot: i32) {
+    unsafe {
+        __imomoe_native_base_ForceRespawnClient.expect("ForceRespawnClient function was not found")(
+            playerSlot,
+        )
+    }
+}
+pub type _ForceRespawnClient = unsafe extern "C" fn(i32);
+#[allow(dead_code, non_upper_case_globals)]
+#[unsafe(no_mangle)]
+pub static mut __imomoe_native_base_ForceRespawnClient: Option<_ForceRespawnClient> = None;
+
 /// Returns the current engine userid, or -1 for a disconnected or invalid slot.
 ///
 /// # Arguments

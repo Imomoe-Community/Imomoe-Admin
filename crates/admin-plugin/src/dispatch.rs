@@ -1,5 +1,5 @@
 use crate::{
-    engine, s2sdk as sdk,
+    engine, imomoe_native_base as native, s2sdk as sdk,
     state::{self, Result, State},
 };
 use imomoe_admin_core::{
@@ -615,7 +615,7 @@ fn dispatch(
                     if !p.alive && matches!(p.team, Team::Terrorist | Team::CounterTerrorist) =>
                 {
                     state.restore_movement(p.slot);
-                    sdk::ForceRespawnClient(p.slot);
+                    native::ForceRespawnClient(p.slot);
                     true
                 }
                 "tp" | "bring" => teleport(p.slot, destination.expect("checked destination")),

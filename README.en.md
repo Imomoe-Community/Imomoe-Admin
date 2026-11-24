@@ -27,10 +27,10 @@
 | Component | Requirement & Notes |
 | :--- | :--- |
 | **Plugify Host** | `v3.1.0+` with Plugify Rust & Go language modules, PolyHook, Configs, and Translations. |
-| **S2SDK** | Pinned fork `3.4.3@a2c393c` (SourceSDK `2c0641d`), including `ForceRespawnClient`. |
-| **NativeBase** | Both 0.1.0 and 0.4.0 supply the engine userid export. Packaging selects 0.4.0; Admin can be installed without FunRounds. |
+| **S2SDK** | Pinned fork `3.5.1@abc161b` (SourceSDK `e4e7260`), with the official `v3.5.1` export ABI and no custom exports. |
+| **NativeBase** | `0.4.0` supplies `GetClientUserID` and `ForceRespawnClient`. Admin can be installed without FunRounds. |
 | **Permissions** | `permissions >=1.3.1` and `permissions_connector_s2`. |
-| **ServerFixes (Optional)** | When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8` ([noclip ownership patch](integration/serverfixes-noclip-ownership.patch)). |
+| **ServerFixes (Optional)** | When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8`, which includes noclip ownership support. |
 | **Chat Prefix (Optional)** | [Imomoe Chat Prefix](https://github.com/Imomoe-Community/Imomoe-Chat-Prefix) (`imomoe_chat_prefix >=0.1.0`). When absent, rules, help, and scheduled announcements are sent unprefixed. |
 
 > [!IMPORTANT]
@@ -46,8 +46,8 @@
 ### Installation
 
 1. Obtain the official [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify), [Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0), [C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5), [PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9), [Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2). Install the Admin permissions dependencies separately: [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases), [Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases), [Translations](https://github.com/untrustedmodders/plugify-plugin-translations/releases), [permissions-connector-s2](https://github.com/fr0nch/permissions-connector-s2/releases), [permissions-storage](https://github.com/fr0nch/permissions-storage/releases). Keep the official package manifests and resources and replace the two libraries as described above.
-2. Stop the server. For a first installation, install the matching-platform `s2sdk-fork-3.4.3-a2c393c-<platform>.zip` and `imomoe-native-base-0.4.0-<platform>.zip` once, then copy the Admin ZIP's `game/` tree into the server root. The Admin ZIP does not supply the shared plugins or permissions components.
-3. If FunRounds already uses this exact dependency set, install only Admin and any missing permissions dependencies. Do not install a second SDK or NativeBase. Existing 0.1.0 installations keep their corresponding SDK; do not mix assets from the two pairs. Use the pinned fork, not the identically named official SDK. Move the official SDK or old `funrounds_native` out of discovery before switching. Replacing official files and then running `mamba update --all` is not supported.
+2. Stop the server. Install the matching-platform `s2sdk-fork-3.5.1-abc161b-<platform>.zip` and `imomoe-native-base-0.4.0-<platform>.zip`, then copy the Admin ZIP's `game/` tree into the server root. The Admin ZIP does not supply the shared plugins or permissions components.
+3. If FunRounds already uses this exact pair, install only Admin and any missing permissions components. Before switching pairs, make sure existing consumers support the new pair and move any superseded same-name SDK or old `funrounds_native` out of the plugin scan path. Avoid running `mamba update --all` over the pinned SDK.
 4. Keep existing Admin configuration, storage and announcements. On rollback, stop the server and remove only Admin if the other consumer still uses the shared dependencies. To return to the old provider, restore the entire previous consumer/SDK/provider/configuration set.
 
 To build and package only Admin (Windows example):
@@ -110,7 +110,7 @@ cargo build --release --workspace --locked
 Regenerate typed bindings against live server manifests:
 
 ```powershell
-./scripts/generate-bindings.ps1 -Generator <plugify-gen> -S2SdkManifest <s2sdk.pplugin> -PermissionsManifest <permissions.pplugin>
+./scripts/generate-bindings.ps1 -Generator <plugify-gen> -S2SdkManifest <s2sdk.pplugin> -NativeBaseManifest <imomoe_native_base.pplugin> -PermissionsManifest <permissions.pplugin>
 ```
 
 - [Architecture & Spec](docs/SPEC.md#english) · [Acceptance & Live Checklist](docs/ACCEPTANCE.md#english)

@@ -382,22 +382,6 @@ pub type _ChangeClientTeam = unsafe extern "C" fn(i32, CSTeam);
 #[unsafe(no_mangle)]
 pub static mut __s2sdk_ChangeClientTeam: Option<_ChangeClientTeam> = None;
 
-/// Forces a full engine respawn for a player, including when the current pawn is alive. Supported in CS2.
-///
-/// # Arguments
-/// * `playerSlot` - (int32): The index of the player's slot to respawn.
-#[track_caller]
-#[allow(dead_code, non_snake_case)]
-pub fn ForceRespawnClient(playerSlot: i32) {
-    unsafe {
-        __s2sdk_ForceRespawnClient.expect("ForceRespawnClient function was not found")(playerSlot)
-    }
-}
-pub type _ForceRespawnClient = unsafe extern "C" fn(i32);
-#[allow(dead_code, non_upper_case_globals)]
-#[unsafe(no_mangle)]
-pub static mut __s2sdk_ForceRespawnClient: Option<_ForceRespawnClient> = None;
-
 /// Forces a player to commit suicide.
 ///
 /// # Arguments

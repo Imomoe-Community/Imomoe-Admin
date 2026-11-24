@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
-  "version": "3.4.3",
+  "version": "3.5.1",
   "name": "s2sdk",
   "description": "Provides functionality for other plugins from Source 2 engine",
   "author": "untrustedmodders",
@@ -429,23 +429,6 @@
           "ref": false,
           "description": "The team index to change the client to.",
           "enum": "CSTeam"
-        }
-      ],
-      "retType": {
-        "type": "void"
-      }
-    },
-    {
-      "name": "ForceRespawnClient",
-      "group": "Clients",
-      "description": "Forces a full engine respawn for a player, including when the current pawn is alive. Supported in CS2.",
-      "funcName": "ForceRespawnClient",
-      "paramTypes": [
-        {
-          "name": "playerSlot",
-          "type": "int32",
-          "ref": false,
-          "description": "The index of the player's slot to respawn."
         }
       ],
       "retType": {

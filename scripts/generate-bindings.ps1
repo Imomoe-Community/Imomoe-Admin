@@ -17,13 +17,13 @@ $names = @{
         'OnClientAuthenticated_Register','OnClientAuthenticated_Unregister','OnClientDisconnect_Register',
         'OnClientDisconnect_Unregister','OnClientPutInServer_Register','OnClientPutInServer_Unregister','OnMapEnd_Register','OnMapEnd_Unregister','OnGameFrame_Register',
         'OnGameFrame_Unregister','OnEntityDeleted_Register','OnEntityDeleted_Unregister',
-        'ForcePlayerSuicide','ForceRespawnClient','ChangeClientTeam','SwitchClientTeam','GetClientHealth',
+        'ForcePlayerSuicide','ChangeClientTeam','SwitchClientTeam','GetClientHealth',
         'SetClientHealth','ApplyAbsVelocityImpulseToClient','GetClientAbsOrigin','SetClientAbsOrigin',
         'GetEntityMoveType','SetEntityMoveType','IsValidEntHandle','FindConVar','IsConVarFlagSet',
         'GetConVarValue','SetConVarValue','ServerCommand','HookEvent','UnhookEvent',
         'GetEventPlayerSlot'
     )
-    imomoe_native_base = @('GetClientUserID')
+    imomoe_native_base = @('GetClientUserID','ForceRespawnClient')
     permissions = @('HasPermission','CanAffectUser','LoadUser')
 }
 [IO.Directory]::CreateDirectory($bindingRoot) | Out-Null

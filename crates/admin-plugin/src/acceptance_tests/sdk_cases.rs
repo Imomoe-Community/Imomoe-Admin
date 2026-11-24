@@ -268,6 +268,7 @@ impl Session {
             sdk::__s2sdk_IsFakeClient = Some(fake);
             sdk::__s2sdk_GetClientSteamID64 = Some(account);
             admin::imomoe_native_base::__imomoe_native_base_GetClientUserID = Some(user_id);
+            admin::imomoe_native_base::__imomoe_native_base_ForceRespawnClient = Some(respawn);
             sdk::__s2sdk_GetClientName = Some(name);
             sdk::__s2sdk_GetClientTeam = Some(team);
             sdk::__s2sdk_IsClientAlive = Some(alive);
@@ -292,7 +293,6 @@ impl Session {
             sdk::__s2sdk_SetEntityMoveType = Some(set_movement);
             sdk::__s2sdk_GetClientAbsOrigin = Some(origin);
             sdk::__s2sdk_SetClientAbsOrigin = Some(set_origin);
-            sdk::__s2sdk_ForceRespawnClient = Some(respawn);
             sdk::__s2sdk_ChangeClientTeam = Some(set_team);
             sdk::__s2sdk_SwitchClientTeam = Some(set_team);
             sdk::__s2sdk_ServerCommand = Some(server_command);
