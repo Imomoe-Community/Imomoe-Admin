@@ -120,7 +120,7 @@ flowchart TD
 
 #### 3.1 一期 S2SDK 依赖与二期接口
 
-1. **S2SDK**：固定 fork `3.5.1@019e5b7`（SourceSDK `e4e7260`）沿用[官方 `v3.5.1` 导出 ABI](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.5.1/plugify-plugin-s2sdk.pplugin.in)，无自定义导出。`KickClient` 用原生原因码断连，消息用于服务端诊断；`GetClientListening` / `SetClientListening` 读写听者与发言者之间的语音覆盖；`ServerCommand` 执行固定的对局控制命令。
+1. **S2SDK**：固定 fork `3.5.1@54903d0`（SourceSDK `e4e7260`）沿用[官方 `v3.5.1` 导出 ABI](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.5.1/plugify-plugin-s2sdk.pplugin.in)，无自定义导出。`KickClient` 用原生原因码断连，消息用于服务端诊断；`GetClientListening` / `SetClientListening` 读写听者与发言者之间的语音覆盖；`ServerCommand` 执行固定的对局控制命令。
 2. **NativeBase 0.4.0**：`GetClientUserID` 供 `#userid:` 查找真实引擎 ID；`ForceRespawnClient` 供复活命令使用。
 3. **二期菜单实验所需**：
    - `CCSCustomHudLayout` 布局下发、每玩家覆写及 Panel 状态更新接口；
@@ -217,7 +217,7 @@ Exported in `imomoe_admin.pplugin`:
 
 ### 3. Engine Extensions & Cross-Plugin Boundaries
 
-- **S2SDK / NativeBase**: The pinned S2SDK fork `3.5.1@019e5b7` (SourceSDK `e4e7260`) has the official `v3.5.1` export ABI and no custom exports. NativeBase `0.4.0` supplies `GetClientUserID` for engine userid lookup and `ForceRespawnClient` for the respawn command.
+- **S2SDK / NativeBase**: The pinned S2SDK fork `3.5.1@54903d0` (SourceSDK `e4e7260`) has the official `v3.5.1` export ABI and no custom exports. NativeBase `0.4.0` supplies `GetClientUserID` for engine userid lookup and `ForceRespawnClient` for the respawn command.
 - **`Imomoe-ServerFixes-CS2` Cooperation**:
   - Gagging routes through S2SDK command listeners without double-hooking ServerFixes's chat admission hook.
   - `Imomoe-ServerFixes-CS2 main@67232f8` includes noclip ownership support so `sf_noclip_reset 1` preserves only Admin-owned `noclip` on the active pawn handle.
