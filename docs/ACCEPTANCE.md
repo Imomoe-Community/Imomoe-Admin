@@ -33,7 +33,7 @@ cargo build --release --workspace --locked
 1. **SDK 与跨插件 ABI**：确认 `GetClientUserID` 与 `status` 一致、`GetClientListening` / `SetClientListening` 读写恢复正常、`ServerCommand` 可执行对局命令、`KickClient` 正常踢出 BOT；用独立消费插件核对 [`imomoe_admin.pplugin`](../imomoe_admin.pplugin) 全部 9 个导出接口及权限/免疫/边界返回值。
 2. **存储、分页与到期**：分别验证 SQLite（`data/imomoe_admin.db`）与文件驱动（`data/bans.json` / `data/comms.json`）的离线封禁、重启保留与解封；验证 8 条/页分页，以及短期封禁到期后自动移出有效列表且 SQLite 保留历史记录。
 3. **配置热重载与 ConVar 白名单**：确认缺词条、空词条或非法 JSONC 在 `imomoe_reload` / `!iareload` 时明确报错且保留当前生效配置，修复后可重载；确认 `sv_cheats` 与带 `Cheat` 标志的 ConVar 即使写入 `cvar_allowlist` 仍被拒绝读写，仅安全白名单项允许访问。
-4. **目标选择器与权限边界**：确认无引号 `#userid:N`、带引号含空格昵称精确命中，模糊多候选昵称与高危指令群选（如 `@bots` / `@all`）被拒绝；确认离线免疫查询不覆盖账号已有昵称与最后到访时间，临时通配节点优先于永久拒绝并在到期后自动失效。
+4. **目标选择器与权限边界**：确认无引号 `#userid:N`、带引号含空格昵称精确命中；聊天 `!slap` 可用能唯一确定的无引号完整昵称，带数字的昵称与伤害参数有歧义时应提示改用 `#userid:N`。模糊多候选昵称与高危指令群选（如 `@bots` / `@all`）被拒绝；确认离线免疫查询不覆盖账号已有昵称与最后到访时间，临时通配节点优先于永久拒绝并在到期后自动失效。
 5. **救场、对局与 ServerFixes 协同**：验证 `imomoe_slap`、`imomoe_tp`、`imomoe_slay` / `imomoe_respawn`、服务端换队（`imomoe_team` / `imomoe_swap`）与对局控制（`imomoe_restart` / `imomoe_pause` / `imomoe_unpause`）；验证 `sf_noclip_reset 1` 在关闭 `sv_cheats` 时保留 Admin 持有 `noclip` 并清除作弊 `noclip`，且 `freeze` / `noclip` 在死亡重生、换图、断线及卸载回调后均回收至 `Walk`、不串到新 pawn；验证 `say @`、`say_team @` 与 `!` / `/` 命令不泄露到公开聊天。
 
 ---
@@ -46,7 +46,7 @@ cargo build --release --workspace --locked
 - [ ] **封禁、踢出与重连**：验证原生踢出/封禁断连提示、Steam 身份验证后拒连及解封后正常重连（封禁原因与到期时间通过 `imomoe_banlist` 核对）。
 - [ ] **私信与隐身**：将其中一名账号切换为普通玩家，核对 `say @...`、`say_team @...`、`!report`、`!a` 的收件、非收件与公开频道；检查防刷冷却、`data/reports.log` 落盘，以及 `!hide` 对 `!admins` 与公开通告署名的影响。
 - [ ] **通信处罚**：两人互听，对照禁麦、禁言、`silence`、到期与解除；验证 `!comms` 自查，解禁后确认已有第三方语音覆盖正常恢复。
-- [ ] **客户端交互与 API**：对照客户端 `jointeam` 限流与管理换队，检查 `!bring`、`!goto`、公告、规则与中英文自适应；用独立消费插件核对真实账号的权限、处罚及管理通知收件。
+- [ ] **客户端交互与 API**：验证管理命令能直接将目标切到指定队伍，不要求玩家自行选队；检查 `!bring`、`!goto`、公告、规则与中英文自适应；用独立消费插件核对真实账号的权限、处罚及管理通知收件。
 - [ ] **恢复隔离服**：撤销临时权限与处罚，退出并恢复临时文件；确保日志中不保留任何 Steam 凭据或 RCON 密码。
 
 ---
@@ -80,7 +80,7 @@ Verify the following happy paths and safety boundaries on an isolated server via
 1. **SDK & Cross-Plugin ABI**: Verify `GetClientUserID` matches `status`, voice listening overrides read back and restore cleanly, `ServerCommand` runs match controls, and `KickClient` disconnects bots; verify all 9 exports in [`imomoe_admin.pplugin`](../imomoe_admin.pplugin) and their permission/immunity boundaries from a standalone consumer plugin.
 2. **Storage, Pagination & Expiry**: Verify offline ban persistence across restart and unban on both SQLite (`data/imomoe_admin.db`) and file drivers (`data/bans.json` / `data/comms.json`); verify 8-entry pagination and automatic expiry leaving SQLite history intact.
 3. **Hot Reload & ConVar Allowlist**: Verify invalid JSONC or incomplete/empty translations fail `imomoe_reload` / `!iareload` without replacing the active config, and succeed once fixed; verify `sv_cheats` and `Cheat`-flagged ConVars are rejected even when listed in `cvar_allowlist`.
-4. **Target Selectors & Permissions**: Verify unquoted `#userid:N` and quoted spaced nicknames resolve cleanly while ambiguous substrings and high-risk group selectors (`@bots`, `@all`) are refused; verify offline immunity lookups preserve stored names/`lastvisit_at`, and temporary wildcards override permanent denies until expiry.
+4. **Target Selectors & Permissions**: Verify unquoted `#userid:N` and quoted spaced nicknames resolve cleanly. In chat, `!slap` also accepts an unquoted full nickname with an unambiguous argument boundary; when a trailing number could be part of the name or damage, verify it asks for `#userid:N`. Verify that ambiguous substrings and high-risk group selectors (`@bots`, `@all`) are refused; verify offline immunity lookups preserve stored names/`lastvisit_at`, and temporary wildcards override permanent denies until expiry.
 5. **Rescue, Match Control & ServerFixes Synergy**: Verify `imomoe_slap`, `imomoe_tp`, `imomoe_slay` / `imomoe_respawn`, server-side team switches (`imomoe_team` / `imomoe_swap`), and match commands (`imomoe_restart` / `imomoe_pause` / `imomoe_unpause`); verify `sf_noclip_reset 1` preserves Admin-owned `noclip` while resetting cheat `noclip`, `freeze` / `noclip` reclaim to `Walk` on death/respawn, map change, disconnect, and unload without leaking onto new pawns, and `say @` / `say_team @` / `!` / `/` commands never leak into public chat.
 
 ---
@@ -93,5 +93,5 @@ With `imomoe_admin` in `Running` state, Steam-logged server, and two authorized 
 - [ ] **Kick, Ban & Reconnect**: Verify native CS2 kick/ban disconnect prompts, post-Steam-auth ban rejection, and reconnect after unban (inspect reason/expiry via `imomoe_banlist`).
 - [ ] **Private Chat & Hide**: Switch one client to non-admin; verify `say @...`, `say_team @...`, `!report`, `!a` routing and non-leakage to public chat, report cooldown and `data/reports.log`, plus `!hide` effects on `!admins` and public attribution.
 - [ ] **Comms & Bidirectional Audio**: Test mute, gag, `silence`, expiry, unmute/ungag, and `!comms` self-query with live voice checks and third-party voice-override restoration.
-- [ ] **Client Interaction & API**: Compare client `jointeam` rate limits against admin team switches; verify `!bring`, `!goto`, announcements, rules, localization, and real-account API enforcement/notifications from a consumer plugin.
+- [ ] **Client Interaction & API**: Verify that the admin command moves the target to the requested team without requiring the player to select a team; verify `!bring`, `!goto`, announcements, rules, localization, and real-account API enforcement/notifications from a consumer plugin.
 - [ ] **Server Cleanup**: Revoke temporary rights/punishments, exit cleanly, restore temporary files, and keep logs free of Steam credentials or RCON passwords.

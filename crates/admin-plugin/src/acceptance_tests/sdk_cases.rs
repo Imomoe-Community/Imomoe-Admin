@@ -27,6 +27,9 @@ struct World {
     zh_slot: Option<i32>,
     revoked_mute: Option<u64>,
     slapped: Vec<i32>,
+    names: [String; 4],
+    health: [i32; 4],
+    deputy_slap: bool,
     kicks: Vec<(i32, Reason, String)>,
     voice: [[ListenOverride; 4]; 4],
     cvar_reads: Vec<u64>,
@@ -89,7 +92,7 @@ unsafe extern "C" fn account(slot: i32) -> u64 {
     world(|w| w.accounts[slot as usize])
 }
 unsafe extern "C" fn name(slot: i32) -> Str {
-    Str::from_str([OP, DEPUTY, PLAYER, "Training Bot"][slot as usize])
+    world(|w| Str::from_str(&w.names[slot as usize]))
 }
 unsafe extern "C" fn team(slot: i32) -> CSTeam {
     world(|w| w.teams[slot as usize])
@@ -116,6 +119,12 @@ unsafe extern "C" fn center(slot: i32, html: &Str, _: i32) {
 unsafe extern "C" fn push(slot: i32, _: &Vec3) {
     world(|w| w.slapped.push(slot));
 }
+unsafe extern "C" fn get_health(slot: i32) -> i32 {
+    world(|w| w.health[slot as usize])
+}
+unsafe extern "C" fn set_health(slot: i32, health: i32) {
+    world(|w| w.health[slot as usize] = health);
+}
 unsafe extern "C" fn chat(slot: i32, message: &Str) {
     world(|w| w.messages.push((slot, message.as_str().into())));
 }
@@ -135,6 +144,9 @@ unsafe extern "C" fn permission(id: u64, node: &Str) -> perm::Status {
     let node = node.as_str();
     if node == "imomoe.admin.mute" && world(|w| w.revoked_mute == Some(id)) {
         return perm::Status::Disallow;
+    }
+    if id == ACCOUNT + 1 && node == "imomoe.admin.slay" && world(|w| w.deputy_slap) {
+        return perm::Status::Allow;
     }
     match id - ACCOUNT {
         0 => perm::Status::Allow,
@@ -232,6 +244,9 @@ impl Session {
             zh_slot: None,
             revoked_mute: None,
             slapped: Vec::new(),
+            names: [OP, DEPUTY, PLAYER, "Training Bot"].map(str::to_owned),
+            health: [100; 4],
+            deputy_slap: false,
             kicks: Vec::new(),
             voice: [[ListenOverride::Default; 4]; 4],
             cvar_reads: Vec::new(),
@@ -256,6 +271,8 @@ impl Session {
             sdk::__s2sdk_GetClientName = Some(name);
             sdk::__s2sdk_GetClientTeam = Some(team);
             sdk::__s2sdk_IsClientAlive = Some(alive);
+            sdk::__s2sdk_GetClientHealth = Some(get_health);
+            sdk::__s2sdk_SetClientHealth = Some(set_health);
             sdk::__s2sdk_GetClientLanguageCode = Some(language);
             sdk::__s2sdk_PrintToChat = Some(chat);
             sdk::__s2sdk_PrintToServer = Some(console);
@@ -306,7 +323,12 @@ fn run(actor: Actor, command: &str) {
         .map_or((false, &command[1..]), |cmd| (true, cmd));
     let args = words(text).unwrap();
     let cmd = lookup(&args[0], !console).unwrap();
-    admin::with_state(|state| dispatch::run(state, actor, cmd, &args[1..])).unwrap();
+    let execute = if console {
+        dispatch::run
+    } else {
+        dispatch::run_chat
+    };
+    admin::with_state(|state| execute(state, actor, cmd, &args[1..])).unwrap();
 }
 
 fn messages() -> Vec<(i32, String)> {
@@ -430,6 +452,71 @@ fn text_menu_rechecks_permission_and_immunity_and_never_retargets_a_departed_pla
     admin::lifecycle(admin::Lifecycle::MapEnd);
     assert_eq!(say(0, "1"), Continue);
 }
+#[test]
+fn chat_slap_preserves_explicit_targets_and_resolves_full_unquoted_nicknames() {
+    let session = Session::start();
+    let actor = Actor::Player(0);
+    for input in [
+        "!slap Player With Spaces 0",
+        "!slap Player With Spaces",
+        r#"!slap "Player With Spaces" 0"#,
+        "!slap With 0",
+        "!slap #userid:12",
+    ] {
+        run(actor, input);
+        assert!(
+            messages().contains(&(0, format!("Applied: slap · {PLAYER}"))),
+            "{input}"
+        );
+    }
+    run(actor, "!slap Player With Spaces 9");
+    run(actor, r#"imomoe_slap "Player With Spaces" 2"#);
+    assert_eq!(world(|w| w.slapped.clone()), [2; 7]);
+    assert_eq!(world(|w| w.health), [100, 100, 89, 100]);
+    let log = fs::read_to_string(session.dir.path().join("data/audit.log")).unwrap();
+    assert_eq!(log.lines().count(), 7);
+    assert!(log.lines().all(|line| {
+        let row: serde_json::Value = serde_json::from_str(line).unwrap();
+        row["actor"] == ACCOUNT && row["command"] == "slap" && row["target"] == PLAYER
+    }));
+}
+
+#[test]
+fn chat_slap_refuses_ambiguous_boundaries_before_immunity_and_keeps_other_grammars() {
+    let _session = Session::start();
+    let actor = Actor::Player(0);
+    world(|w| w.names[3] = format!("{PLAYER} 0"));
+    run(actor, "!slap Player With Spaces 0");
+    let output = messages();
+    assert!(output[0].1.contains("#userid:12") && output[0].1.contains("#userid:13"));
+    assert!(output[1].1.contains("!slap #userid:<N>"));
+    world(|w| w.names[3] = "Player  With Spaces".into());
+    run(actor, "!slap Player With Spaces");
+    assert!(messages()[0].1.contains("More than one player matched"));
+    world(|w| {
+        w.names[3] = "Training Bot".into();
+        w.deputy_slap = true;
+    });
+    run(actor, "!slap Player With Spaces 1001");
+    assert!(
+        messages()
+            .iter()
+            .any(|(_, text)| text.starts_with("Usage:"))
+    );
+    run(Actor::Player(1), "!slap Lead Admin 0");
+    assert!(messages().contains(&(1, format!("Not allowed to target: {OP}"))));
+    assert!(world(|w| w.slapped.is_empty()));
+    world(|w| w.names[2] = "Player  With Spaces".into());
+    run(actor, "!slap Player With Spaces 0");
+    assert!(messages().contains(&(0, "Applied: slap · Player  With Spaces".into())));
+    world(|w| w.names[2] = PLAYER.to_owned());
+    run(actor, r#"!kick "Player With Spaces" 0 keep this reason"#);
+    assert_eq!(
+        world(|w| w.kicks.clone()),
+        [(2, Reason::Kicked, "0 keep this reason".into())]
+    );
+}
+
 #[test]
 fn high_risk_commands_reject_groups_and_ambiguity_before_any_penalty() {
     let _session = Session::start();

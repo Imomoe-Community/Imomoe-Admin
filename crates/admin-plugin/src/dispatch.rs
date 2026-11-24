@@ -26,12 +26,20 @@ pub fn authorized(actor: Actor, cmd: &Command) -> bool {
 }
 
 pub fn run(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) {
+    run_command(state, actor, cmd, args, false);
+}
+
+pub fn run_chat(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) {
+    run_command(state, actor, cmd, args, true);
+}
+
+fn run_command(state: &mut State, actor: Actor, cmd: &Command, args: &[String], chat: bool) {
     if !authorized(actor, cmd) {
         state.reply(actor, "denied", "");
         return;
     }
     let args = selector_args(cmd, args);
-    if let Err(error) = dispatch(state, actor, cmd, &args) {
+    if let Err(error) = dispatch(state, actor, cmd, &args, chat) {
         plugify::error!("imomoe_admin {}: {}", cmd.name, error);
         state.reply(actor, "failed", "");
     }
@@ -69,7 +77,95 @@ fn selector_args<'a>(cmd: &Command, args: &'a [String]) -> std::borrow::Cow<'a, 
     out
 }
 
-fn dispatch(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) -> Result<()> {
+fn slap_chat_args(
+    args: &[String],
+    players: &[Player],
+) -> std::result::Result<Option<Vec<String>>, Vec<String>> {
+    let Some((last, prefix)) = args.split_last() else {
+        return Ok(None);
+    };
+    let Some(first) = prefix.first() else {
+        return Ok(None);
+    };
+    if first.starts_with(['@', '#'])
+        || first.starts_with("!@")
+        || target::steam_id(first).is_some()
+        || args
+            .iter()
+            .any(|word| word.is_empty() || word.contains(char::is_whitespace))
+    {
+        return Ok(None);
+    }
+
+    // Try only slap's two legal shapes: an exact full nickname alone, or a
+    // nickname followed by one damage token. Other chat grammars are unchanged.
+    let whole = args.join(" ").to_lowercase();
+    let without_damage: Vec<_> = players
+        .iter()
+        .filter(|p| chat_nickname(&p.name) == whole)
+        .collect();
+    if prefix.len() == 1 && without_damage.is_empty() {
+        return Ok(None);
+    }
+    let mut with_damage = Vec::new();
+    let numeric = last.strip_prefix(['+', '-']).unwrap_or(last);
+    if !numeric.is_empty() && numeric.bytes().all(|c| c.is_ascii_digit()) {
+        let nickname = prefix.join(" ").to_lowercase();
+        with_damage = players
+            .iter()
+            .filter(|p| {
+                let name = chat_nickname(&p.name);
+                if prefix.len() == 1 {
+                    // Retain the existing single-token fuzzy interpretation.
+                    name.contains(&nickname)
+                } else {
+                    name == nickname
+                }
+            })
+            .collect();
+    }
+
+    if without_damage.len() + with_damage.len() > 1 {
+        let mut choices: Vec<_> = without_damage
+            .iter()
+            .chain(&with_damage)
+            .map(|p| format!("{} (#userid:{})", p.name, p.user_id))
+            .collect();
+        choices.sort_unstable();
+        choices.dedup();
+        return Err(choices);
+    }
+    if let [p] = without_damage.as_slice() {
+        return Ok(Some(vec![format!("#userid:{}", p.user_id)]));
+    }
+    if let [p] = with_damage.as_slice()
+        && prefix.len() > 1
+        && slap_damage(last).is_some()
+    {
+        return Ok(Some(vec![format!("#userid:{}", p.user_id), last.clone()]));
+    }
+    Ok(None)
+}
+
+fn chat_nickname(name: &str) -> String {
+    // An unquoted name's original whitespace isn't preserved by the tokenizer.
+    name.split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+}
+
+fn slap_damage(input: &str) -> Option<i32> {
+    input.parse().ok().filter(|&d| (0..=1000).contains(&d))
+}
+
+fn dispatch(
+    state: &mut State,
+    actor: Actor,
+    cmd: &Command,
+    args: &[String],
+    chat: bool,
+) -> Result<()> {
     let arg = |index: usize| args.get(index).map(String::as_str);
     let player_slot = match actor {
         Actor::Player(slot) => Some(slot),
@@ -359,11 +455,28 @@ fn dispatch(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) -> 
         _ => {}
     }
 
-    let Some(query) = arg(0) else {
+    if args.is_empty() {
         usage(state);
         return Ok(());
-    };
+    }
     let players = engine::players();
+    let normalized = if chat && cmd.name == "slap" {
+        match slap_chat_args(args, &players) {
+            Ok(value) => value,
+            Err(choices) => {
+                if choices.len() > 1 {
+                    state.reply(actor, "ambiguous", &choices.join(", "));
+                }
+                state.reply(actor, "usage", "!slap #userid:<N> [damage]");
+                return Ok(());
+            }
+        }
+    } else {
+        None
+    };
+    let args = normalized.as_deref().unwrap_or(args);
+    let arg = |index: usize| args.get(index).map(String::as_str);
+    let query = &args[0];
     let targets = select(
         state,
         actor,
@@ -374,9 +487,7 @@ fn dispatch(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) -> 
         cmd.name == "goto",
     );
     let damage = if cmd.name == "slap" {
-        match arg(1).map_or(Some(0), |arg| {
-            arg.parse::<i32>().ok().filter(|d| (0..=1000).contains(d))
-        }) {
+        match arg(1).map_or(Some(0), slap_damage) {
             Some(damage) if args.len() <= 2 => damage,
             _ => {
                 usage(state);

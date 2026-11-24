@@ -293,7 +293,7 @@ unsafe extern "C" fn on_chat_trigger(
         };
         if let Some(actor) = actor(slot) {
             let args: Vec<_> = args.map(str::to_owned).collect();
-            with_state(|state| dispatch::run(state, actor, cmd, &args));
+            with_state(|state| dispatch::run_chat(state, actor, cmd, &args));
         }
         ResultType::Stop
     })
@@ -339,7 +339,7 @@ fn handle_say(
         }
         if let Some(cmd) = lookup(name, true) {
             match words(input) {
-                Some(args) => dispatch::run(state, actor, cmd, &args[1..]),
+                Some(args) => dispatch::run_chat(state, actor, cmd, &args[1..]),
                 None => state.reply(actor, "usage", &format!("!{} {}", cmd.chat, cmd.usage)),
             }
             return ResultType::Stop;
