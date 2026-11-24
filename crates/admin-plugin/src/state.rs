@@ -1,6 +1,8 @@
 use crate::{
     config::{Config, Storage},
-    engine, s2sdk as sdk, storage,
+    engine,
+    menu::Menus,
+    s2sdk as sdk, storage,
 };
 use imomoe_admin_core::{
     command::COMMANDS,
@@ -30,6 +32,7 @@ pub struct State {
     config_root: PathBuf,
     data_root: PathBuf,
     pub store: Box<dyn PunishmentStore>,
+    pub menus: Menus,
     hidden: HashMap<i32, (u64, bool)>,
     reports: HashMap<u64, Instant>,
     movement: HashMap<i32, Movement>,
@@ -59,6 +62,7 @@ impl State {
             config_root,
             data_root,
             store,
+            menus: Menus::default(),
             hidden: HashMap::new(),
             reports: HashMap::new(),
             movement: HashMap::new(),
@@ -431,6 +435,7 @@ impl State {
     }
 
     pub fn clear_map(&mut self) {
+        self.menus.clear();
         for slot in self.movement.keys().copied().collect::<Vec<_>>() {
             self.restore_movement(slot);
         }

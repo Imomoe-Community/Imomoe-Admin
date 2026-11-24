@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -55,3 +56,36 @@ jobs:
 
       - name: Build release binary
         run: cargo build --release --workspace --locked
+      - name: Package pinned runtime inputs
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          $platform = if ($IsWindows) { 'windows-x64' } else { 'linux-x64' }
+          $binary = 'target/release/imomoe_admin.dll'
+          if ($IsLinux) {
+            $target = 'x86_64-unknown-linux-gnu'
+            $image = 'registry.gitlab.steamos.cloud/steamrt/sniper/sdk@sha256:bb30053d3cd19d35c76ae69b2790dbaa1430448006f8240cb6d7e723f2d1940e'
+            cargo fetch --locked --target $target
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            docker run --rm --network none --user "$(id -u):$(id -g)" `
+              -e HOME=/tmp -e CARGO_HOME=/cargo -e RUSTUP_HOME=/rustup -e PATH=/cargo/bin:/usr/bin:/bin `
+              -e CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/gcc-10 `
+              -v "${PWD}:/workspace" -v "${HOME}/.cargo:/cargo" -v "${HOME}/.rustup:/rustup" -w /workspace $image `
+              cargo +1.100.0 build --release --workspace --locked --offline --target $target --target-dir .work/steamrt-target
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $binary = ".work/steamrt-target/$target/release/libimomoe_admin.so"
+          }
+          $native = Get-Content -Raw runtime/nativebase.json | ConvertFrom-Json
+          $sdk = Get-Content -Raw runtime/s2sdk.json | ConvertFrom-Json
+          $base = "$($native.repository)/releases/download/v$($native.version)"
+          New-Item -ItemType Directory -Force .work/dependencies | Out-Null
+          foreach ($asset in @("imomoe-native-base-$($native.version)-$platform.zip", "s2sdk-fork-$($sdk.version)-$($sdk.commit.Substring(0,7))-$platform.zip")) {
+            Invoke-WebRequest "$base/$asset" -OutFile ".work/dependencies/$asset"
+          }
+          python scripts/package.py --platform $platform --binary $binary --dependency-dir .work/dependencies --archive "dist/admin-$platform.zip"
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: admin-${{ matrix.runner }}
+          path: dist/admin-*.zip
+          if-no-files-found: error

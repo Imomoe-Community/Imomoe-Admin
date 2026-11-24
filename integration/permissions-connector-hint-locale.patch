@@ -1,0 +1,27 @@
+diff --git a/internal/helpers.go b/internal/helpers.go
+--- a/internal/helpers.go
++++ b/internal/helpers.go
+@@ -15,7 +15,11 @@
+ 		p.SendNotifyPlayer(playerSlot, config.Console|config.Chat, msg)
+ 	}
+ 	if flags&config.Hint != 0 {
+-		msg = t.TranslateFormat(language, translationKey+".hint", args)
++		key := translationKey + ".hint"
++		msg = t.TranslateFormat(language, key, args)
++		if msg == "" && language != "en" {
++			msg = t.TranslateFormat("en", key, args)
++		}
+ 		p.SendNotifyPlayer(playerSlot, config.Hint, msg)
+ 	}
+ }
+@@ -29,7 +33,9 @@
+ 		utils.PrintToChatColored(playerSlot, text)
+ 	}
+ 	if flags&config.Hint != 0 {
+-		utils.PrintCentreHtml(playerSlot, utils.RemoveTags(text), p.config.Settings.HintDuration)
++		if msg := utils.RemoveTags(text); msg != "" {
++			utils.PrintCentreHtml(playerSlot, msg, p.config.Settings.HintDuration)
++		}
+ 	}
+ }
+ 

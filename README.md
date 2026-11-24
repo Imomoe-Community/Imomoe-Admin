@@ -29,13 +29,15 @@
 | 组件 / <sub><sup>Component</sup></sub> | 版本与说明 / <sub><sup>Requirement & Notes</sup></sub> |
 | :--- | :--- |
 | **Plugify 框架**<br><sub><sup>Plugify Host</sup></sub> | `v3.1.0+`，需加载 Rust / Go 语言模块、PolyHook、Configs 与 Translations。<br><sub><sup>`v3.1.0+` with Rust and Go language modules, PolyHook, Configs, and Translations.</sup></sub> |
-| **S2SDK** | `>=3.4.3`；原版 [S2SDK v3.4.3](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.4.3/plugify-plugin-s2sdk.pplugin.in) 已含 `GetClientListening`、`SetClientListening` 与 `ServerCommand`，一期另需补充 `GetClientUserID`（见 [userid 补丁](integration/s2sdk-userid.patch)，后续迁入共享 C++ 底座）与 `ForceRespawnClient`。<br><sub><sup>`>=3.4.3`; vanilla v3.4.3 supplies `GetClientListening`, `SetClientListening`, and `ServerCommand`, while Phase 1 also requires `GetClientUserID` (see [userid patch](integration/s2sdk-userid.patch)) and `ForceRespawnClient`.</sup></sub> |
+| **S2SDK** | 固定 fork `3.5.1@54903d0`（SourceSDK `e4e7260`），导出 ABI 与官方 `v3.5.1` 一致，无自定义导出。<br><sub><sup>Pinned fork `3.5.1@54903d0` (SourceSDK `e4e7260`), with the official `v3.5.1` export ABI and no custom exports.</sup></sub> |
+| **NativeBase** | `0.4.0` 提供 `GetClientUserID` 和 `ForceRespawnClient`。Admin 可独立安装，不需要 FunRounds。<br><sub><sup>`0.4.0` supplies `GetClientUserID` and `ForceRespawnClient`; FunRounds is not required.</sup></sub> |
 | **Permissions** | `permissions >=1.3.1` 与 `permissions_connector_s2`。<br><sub><sup>`permissions >=1.3.1` and `permissions_connector_s2`.</sup></sub> |
-| **ServerFixes（可选）**<br><sub><sup>ServerFixes (Optional)</sup></sub> | 若启用 `sf_noclip_reset 1`，需包含 `Imomoe-ServerFixes-CS2 main@67232f8`（已合入 [noclip 所有权补丁](integration/serverfixes-noclip-ownership.patch)）。<br><sub><sup>When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8` ([noclip ownership patch](integration/serverfixes-noclip-ownership.patch)).</sup></sub> |
+| **ServerFixes（可选）**<br><sub><sup>ServerFixes (Optional)</sup></sub> | 若启用 `sf_noclip_reset 1`，请使用包含 `Imomoe-ServerFixes-CS2 main@67232f8` 的构建，该提交已合入 noclip 所有权协同。<br><sub><sup>When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8`, which includes noclip ownership support.</sup></sub> |
 | **Chat Prefix（可选）**<br><sub><sup>Chat Prefix (Optional)</sup></sub> | [Imomoe Chat Prefix](https://github.com/Imomoe-Community/Imomoe-Chat-Prefix)（`imomoe_chat_prefix >=0.1.0`）；未安装时规则、帮助与定时公告以原文发送。<br><sub><sup>`imomoe_chat_prefix >=0.1.0`; when absent, rules, help, and scheduled announcements are sent without a prefix.</sup></sub> |
 
 > [!IMPORTANT]
-> - **Windows 权限依赖（Go TLS 修复） / Windows Permissions TLS Fix**：`permissions-connector-s2`（1.0.0）与 `permissions-storage`（1.0.2）若以标准 Go 1.27.4 编译同载，会因争用 `ArbitraryUserPointer` 导致 Go TLS 崩溃。部署 Windows 服务端前，请确认两组件已使用包含 [Go 上游修复 `35b807d`](https://github.com/golang/go/commit/35b807d) 的 Go 1.28+ 重编。<br><sub><sup>Recompile `permissions-connector-s2` (1.0.0) and `permissions-storage` (1.0.2) with Go 1.28+ containing upstream fix [`35b807d`](https://github.com/golang/go/commit/35b807d) to avoid the `ArbitraryUserPointer` TLS collision on Windows.</sup></sub>
+> - **权限提示 / Permission hints**：对 connector 1.0.0 应用[通知补丁](integration/permissions-connector-hint-locale.patch)：中心提示缺译时回退英语，仍为空则不显示。<br><sub><sup>Patch connector 1.0.0 so center hints fall back to English and are skipped if still empty.</sup></sub>
+> - **Windows 同载 / Windows co-loading**：这两版官方 DLL 缺少 [Go TLS 修复 `35b807d`](https://github.com/golang/go/commit/35b807d)，须按下方步骤一起重编。<br><sub><sup>Rebuild both Windows DLLs with the Go TLS fix using the steps below.</sup></sub>
 > - **离线免疫查询 / Offline Immunity Profile Patch**：`permissions-storage` 1.0.2 需合入 [离线资料补丁](integration/permissions-storage-offline-profile.patch)，防止查询离线玩家免疫度时覆盖数据库既有昵称与最后到访时间。<br><sub><sup>Apply the [offline profile patch](integration/permissions-storage-offline-profile.patch) to `permissions-storage` 1.0.2 so offline immunity lookups do not overwrite stored names or `lastvisit_at`.</sup></sub>
 
 > [!NOTE]
@@ -45,26 +47,46 @@
 
 ### 安装与部署 / Installation
 
-1. 在项目根目录构建发布产物 / Build release artifacts:
+1. 从官方来源准备 [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify)、[Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0)、[C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5)、[PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9)、[Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2)。Admin 另需 [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases), [Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases), [Translations](https://github.com/untrustedmodders/plugify-plugin-translations/releases), [permissions-connector-s2](https://github.com/fr0nch/permissions-connector-s2/releases), [permissions-storage](https://github.com/fr0nch/permissions-storage/releases)。按下方步骤替换两个权限库，保留官方包的清单和默认资源。
+2. 正常停服。安装与服务器平台匹配的 `s2sdk-fork-3.5.1-54903d0-<platform>.zip` 和 `imomoe-native-base-0.4.0-<platform>.zip`，再把 Admin ZIP 的 `game/` 树复制到服务器根目录。Admin ZIP 不携带共享插件和权限组件。
+3. 若 FunRounds 已使用同一配对，只装 Admin 和缺少的权限组件。切换配对时，先确认现有消费者也支持新配对，并把被替换的同名 SDK 或旧 `funrounds_native` 移出扫描目录。覆盖官方文件后再运行 `mamba update --all` 不受支持。
+4. 保留现有配置、公告和数据。回退单独加装的 Admin 时停服撤下 Admin，保留其他消费者仍用的共享依赖。退回旧 provider 时还原整组旧消费者、SDK、provider 和配置。
 
-   ```bash
-   cargo build --release --workspace --locked
-   ```
+只构建并打包 Admin（Windows 示例）：
 
-2. 将 [imomoe_admin.pplugin](imomoe_admin.pplugin) 与动态库放入服务端 `game/csgo/addons/plugify/envs/imomoe_admin/` / Deploy manifest and binary:
-   - **Windows**：将 `target/release/imomoe_admin.dll` 放入 `bin/imomoe_admin.dll`。
-   - **Linux**：将 `target/release/libimomoe_admin.so` 放入 `bin/libimomoe_admin.so`。
+```text
+cargo build --release --workspace --locked
+python scripts/package.py --platform windows-x64 --binary target/release/imomoe_admin.dll --archive dist/admin-windows-x64.zip
+```
 
-3. 将 `configs/imomoe_admin/` 复制到服务端 `game/csgo/addons/plugify/configs/imomoe_admin/`（含 `admin.jsonc`、`announcements.jsonc`、`translations/` 与 `schemas/`）。<br><sub><sup>Copy `configs/imomoe_admin/` to `game/csgo/addons/plugify/configs/imomoe_admin/`.</sup></sub>
+#### 权限组件复建 / Rebuild permissions
 
-4. 将 `imomoe_admin`、`s2sdk` 与 `imomoe_server_fixes` 分别置于独立插件目录（`s2sdk.*.jsonc` 与其清单同级），重启服务端使插件生效。<br><sub><sup>Keep `imomoe_admin`, `s2sdk`, and `imomoe_server_fixes` in separate plugin directories and restart the server.</sup></sub>
+保留官方 [connector 1.0.0](https://github.com/fr0nch/permissions-connector-s2/releases/tag/v1.0.0) 和 [storage 1.0.2](https://github.com/fr0nch/permissions-storage/releases/tag/v1.0.2) 的清单与默认资源，只替换这两个库。两个平台的脚本从固定的官方源码修订构建，并分别应用通知和离线资料补丁。<br><sub><sup>Keep the official package manifests and resources. Both builds use pinned upstream revisions and apply the corresponding hint and offline profile patches.</sup></sub>
 
----
+两端需要 PowerShell 7.5+、Git、curl、tar 和工作树外的新输出目录。Windows x64 使用 Go 1.27.4 引导编译器和 MinGW-w64 UCRT64 GCC（实测 16.2.0）；入口先复建带 TLS 修复的 Go。<br><sub><sup>On both platforms use PowerShell 7.5+, Git, curl, tar, and a new output directory outside the worktree. On Windows x64 use Go 1.27.4 to bootstrap the fixed Go toolchain, and MinGW-w64 UCRT64 GCC (verified with 16.2.0).</sup></sub>
+
+```powershell
+$out = Join-Path $env:TEMP 'imomoe-windows-permissions'
+./scripts/build-windows-permissions.ps1 -OutputDirectory $out `
+    -BootstrapGoRoot 'C:\Program Files\Go' -Gcc 'C:\msys64\ucrt64\bin\gcc.exe'
+```
+
+Linux x64 在 Steam Runtime Sniper 下使用 Go 1.27.4 和 GCC 10。将 `/path/to/go/bin/go` 换成实际 Go 路径。<br><sub><sup>On Linux x64 use Go 1.27.4 and GCC 10 in Steam Runtime Sniper. Substitute the path to your Go executable.</sup></sub>
+
+```sh
+DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 pwsh -NoProfile -File ./scripts/build-permissions.ps1 \
+    -OutputDirectory /tmp/imomoe-linux-permissions -Go /path/to/go/bin/go -Gcc /usr/bin/gcc-10
+```
+
+Sniper 容器内不能联网时，在联网主机用同一脚本的 `-DownloadOnly -OutputDirectory <源码目录>` 预下载官方归档；将该目录挂入容器并给构建命令添加 `-SourceDirectory <容器内源码目录>`。离线容器还需已填充的 Go 模块缓存（`GOMODCACHE`）。<br><sub><sup>For an offline Sniper container, use `-DownloadOnly -OutputDirectory <source-dir>` on the networked host, mount those archives, and add `-SourceDirectory <mounted-source-dir>` to the build command. Supply a populated Go module cache (`GOMODCACHE`) too.</sup></sub>
+
+停服后，将输出的 `libpermissions-connector-s2` 和 `libpermissions-storage`（Windows 为 `.dll`、Linux 为 `.so`）放到各自官方包现有的 `bin/`。保留配置、SQLite 数据和原二进制以便回退；每个组件只加载一份。启动后用 `plg plugins` 确认 `permissions`、`permissions_connector_s2`、`permissions_storage` 和 `imomoe_admin` 均为 `Running`，再用服务端控制台的 `perms_groups` 确认能读到 SQLite 分组。<br><sub><sup>Stop the server and replace the two DLLs or SOs in their existing package `bin/` directories. Keep configuration, SQLite data and rollback files. Load only one copy of each plugin, then check that all four are running and that `perms_groups` shows SQLite groups.</sup></sub>
 
 ### 常用操作与目标选择 / Usage & Target Resolution
 
 全部 35 条控制台命令、聊天别名与默认权限节点见 [一期命令矩阵](docs/SPEC.md#24-一期命令矩阵控制台统一-imomoe_-前缀) / See the [Phase 1 Command Matrix](docs/SPEC.md#24-一期命令矩阵控制台统一-imomoe_-前缀) for all 35 commands and permission nodes:
 
+- **文字菜单 / Text Menu**：在游戏聊天中输入 `!admin`（或在游戏控制台输入 `imomoe_admin`）。在聊天中输入菜单标出的数字，先选动作再选玩家；`0` 返回或退出。不需要 Addon，执行时沿用命令的权限、免疫和默认参数。<br><sub><sup>Open with `!admin` in chat or `imomoe_admin` in the game console. Type the shown digits in chat to choose an action and player; `0` goes back or exits. No addon required; actions keep their command permissions, immunity and defaults.</sup></sub>
 - **封禁与解封 / Bans & Unbans**：`imomoe_ban "player name" 2h <原因>` 封禁在线目标；`imomoe_addban <SteamID64> 7d <原因>` 录入离线封禁（省略时长使用默认值，`0` 表示永久）。对离线账号操作前会加载并比对 `permissions` 免疫度；客户端断连时显示 CS2 原生提示，管理员可用 `imomoe_banlist` 查询原因与到期时间。<br><sub><sup>`imomoe_ban` bans an online player and `imomoe_addban` records an offline SteamID64 ban (`0` = permanent). Offline targets also check `permissions` immunity; admins query reasons and expiry with `imomoe_banlist`.</sup></sub>
 - **通信管控与目标定位 / Comms & Selectors**：`!silence #slot:4 10m` 同时禁麦与禁言（需 `imomoe.admin.mute` 与 `imomoe.admin.gag`）。可用 `#userid:12` 精确匹配引擎 userid；裸 `#12` 同时匹配 slot 与 userid，若命中多个候选则拒绝执行。<br><sub><sup>`!silence #slot:4 10m` applies both mute and gag. Use `#userid:12` for an exact engine userid; bare `#12` rejects execution if both a slot and a userid match.</sup></sub>
 - **私聊与举报 / Admin Chat & Reports**：`!a <消息>` 或 `say_team @<消息>` 仅发送给拥有 `imomoe.admin.chat` 的在线管理；玩家通过 `say @<内容>` 或 `!report <内容>` 举报，消息不会留在公开聊天。<br><sub><sup>`!a` or `say_team @` reaches online admins with `imomoe.admin.chat`; player `say @` and `!report` never leak into public chat.</sup></sub>
@@ -114,7 +136,7 @@ cargo build --release --workspace --locked
 使用服务端实际加载的清单重新生成强类型绑定 / Regenerate typed bindings against live server manifests:
 
 ```powershell
-./scripts/generate-bindings.ps1 -Generator <plugify-gen> -S2SdkManifest <s2sdk.pplugin> -PermissionsManifest <permissions.pplugin>
+./scripts/generate-bindings.ps1 -Generator <plugify-gen> -S2SdkManifest <s2sdk.pplugin> -NativeBaseManifest <imomoe_native_base.pplugin> -PermissionsManifest <permissions.pplugin>
 ```
 
 - [需求与架构规格 / Spec](docs/SPEC.md) · [一期验收清单 / Acceptance](docs/ACCEPTANCE.md) · [双人实测清单 / Live Checklist](docs/ACCEPTANCE.md#最后集中验收真实客户端)

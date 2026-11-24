@@ -1,4 +1,4 @@
-use crate::{permissions as perm, s2sdk as sdk};
+use crate::{imomoe_native_base as native, permissions as perm, s2sdk as sdk};
 use imomoe_admin_core::target::{Actor, Player, Team, steam_id};
 use plugify::Str;
 
@@ -82,7 +82,7 @@ pub fn players() -> Vec<Player> {
         .filter(|&slot| online(slot))
         .map(|slot| Player {
             slot,
-            user_id: sdk::GetClientUserID(slot),
+            user_id: native::GetClientUserID(slot),
             steam_id: account(slot),
             name: clean(sdk::GetClientName(slot).as_str()),
             team: match sdk::GetClientTeam(slot) {
@@ -185,20 +185,21 @@ pub fn require_bindings() -> Result<(), Box<dyn std::error::Error>> {
         __s2sdk_IsClientSourceTV, __s2sdk_GetClientName, __s2sdk_GetClientTeam,
         __s2sdk_GetClientSteamID64, __s2sdk_GetClientLanguageCode, __s2sdk_GetClientPawn,
         __s2sdk_EntPointerToEntHandle, __s2sdk_PrintToChat, __s2sdk_PrintToChatColored, __s2sdk_PrintToServer,
-        __s2sdk_KickClient, __s2sdk_GetClientListening, __s2sdk_SetClientListening,
+        __s2sdk_PrintCentreHtml, __s2sdk_KickClient, __s2sdk_GetClientListening, __s2sdk_SetClientListening,
         __s2sdk_OnClientAuthenticated_Register, __s2sdk_OnClientAuthenticated_Unregister,
         __s2sdk_OnClientDisconnect_Register, __s2sdk_OnClientDisconnect_Unregister, __s2sdk_OnClientPutInServer_Register, __s2sdk_OnClientPutInServer_Unregister,
         __s2sdk_OnMapEnd_Register, __s2sdk_OnMapEnd_Unregister,
         __s2sdk_OnGameFrame_Register, __s2sdk_OnGameFrame_Unregister,
         __s2sdk_OnEntityDeleted_Register, __s2sdk_OnEntityDeleted_Unregister,
-        __s2sdk_ForcePlayerSuicide, __s2sdk_ForceRespawnClient, __s2sdk_ChangeClientTeam,
+        __s2sdk_ForcePlayerSuicide, __s2sdk_ChangeClientTeam,
         __s2sdk_SwitchClientTeam, __s2sdk_GetClientHealth, __s2sdk_SetClientHealth,
         __s2sdk_ApplyAbsVelocityImpulseToClient, __s2sdk_GetClientAbsOrigin,
         __s2sdk_SetClientAbsOrigin, __s2sdk_GetEntityMoveType, __s2sdk_SetEntityMoveType,
         __s2sdk_IsValidEntHandle, __s2sdk_FindConVar, __s2sdk_IsConVarFlagSet,
         __s2sdk_GetConVarValue, __s2sdk_SetConVarValue, __s2sdk_ServerCommand,
-        __s2sdk_HookEvent, __s2sdk_UnhookEvent, __s2sdk_GetEventPlayerSlot, __s2sdk_IsClientAuthorized, __s2sdk_GetClientUserID
+        __s2sdk_HookEvent, __s2sdk_UnhookEvent, __s2sdk_GetEventPlayerSlot, __s2sdk_IsClientAuthorized
     );
+    require!(native: __imomoe_native_base_GetClientUserID, __imomoe_native_base_ForceRespawnClient);
     require!(perm: __permissions_HasPermission, __permissions_CanAffectUser, __permissions_LoadUser);
     Ok(())
 }

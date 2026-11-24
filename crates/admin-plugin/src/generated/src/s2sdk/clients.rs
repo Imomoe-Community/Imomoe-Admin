@@ -11,20 +11,6 @@ use plugify::{Arr, Mat4x4, Str, Var, Vec2, Vec3, Vec4, scope};
 #[allow(unused_imports)]
 use std::sync::RwLock;
 
-/// Returns the current engine userid, or -1 for a disconnected or invalid slot.
-///
-/// # Arguments
-/// * `playerSlot` - (int32)
-#[track_caller]
-#[allow(dead_code, non_snake_case)]
-pub fn GetClientUserID(playerSlot: i32) -> i32 {
-    unsafe { __s2sdk_GetClientUserID.expect("GetClientUserID function was not found")(playerSlot) }
-}
-pub type _GetClientUserID = unsafe extern "C" fn(i32) -> i32;
-#[allow(dead_code, non_upper_case_globals)]
-#[unsafe(no_mangle)]
-pub static mut __s2sdk_GetClientUserID: Option<_GetClientUserID> = None;
-
 /// Returns the client's SteamID64 - a unique 64-bit identifier of a Steam account.
 ///
 /// # Arguments
@@ -395,22 +381,6 @@ pub type _ChangeClientTeam = unsafe extern "C" fn(i32, CSTeam);
 #[allow(dead_code, non_upper_case_globals)]
 #[unsafe(no_mangle)]
 pub static mut __s2sdk_ChangeClientTeam: Option<_ChangeClientTeam> = None;
-
-/// Forces a full engine respawn for a player, including when the current pawn is alive. Supported in CS2.
-///
-/// # Arguments
-/// * `playerSlot` - (int32): The index of the player's slot to respawn.
-#[track_caller]
-#[allow(dead_code, non_snake_case)]
-pub fn ForceRespawnClient(playerSlot: i32) {
-    unsafe {
-        __s2sdk_ForceRespawnClient.expect("ForceRespawnClient function was not found")(playerSlot)
-    }
-}
-pub type _ForceRespawnClient = unsafe extern "C" fn(i32);
-#[allow(dead_code, non_upper_case_globals)]
-#[unsafe(no_mangle)]
-pub static mut __s2sdk_ForceRespawnClient: Option<_ForceRespawnClient> = None;
 
 /// Forces a player to commit suicide.
 ///

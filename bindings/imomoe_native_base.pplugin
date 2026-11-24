@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/tags/v3.1.0/schemas/plugin.schema.json",
+  "version": "0.4.0",
+  "name": "imomoe_native_base",
+  "description": "Shared Source 2 engine bridges for Imomoe plugins",
+  "author": "Mai Ooizumi",
+  "website": "https://github.com/Imomoe-Community/Imomoe-NativeBase-CS2",
+  "license": "AGPL-3.0-or-later",
+  "entry": "bin/imomoe-native-base",
+  "platforms": [],
+  "language": "cpp",
+  "dependencies": [
+    {
+      "name": "s2sdk",
+      "constraints": "3.5.1"
+    },
+    {
+      "name": "polyhook",
+      "constraints": ">=2.5.7"
+    }
+  ],
+  "methods": [
+    {
+      "name": "ForceRespawnClient",
+      "funcName": "ForceRespawnClient",
+      "group": "Clients",
+      "description": "On the game thread, performs a full engine respawn for the slot, including a live player. Does nothing if the player pawn cannot be safely owned by the controller.",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "GetClientUserID",
+      "group": "Clients",
+      "description": "Returns the current engine userid, or -1 for a disconnected or invalid slot.",
+      "funcName": "GetClientUserID",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false
+        }
+      ],
+      "retType": {
+        "type": "int32"
+      }
+    }
+  ],
+  "prototypes": [],
+  "enums": []
+}

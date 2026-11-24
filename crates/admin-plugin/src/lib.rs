@@ -3,6 +3,10 @@ mod acceptance_tests;
 mod config;
 mod dispatch;
 mod engine;
+#[allow(dead_code)]
+#[path = "generated/src/imomoe_native_base/mod.rs"]
+mod imomoe_native_base;
+mod menu;
 #[allow(dead_code, non_camel_case_types)]
 #[path = "generated/src/permissions/mod.rs"]
 mod permissions;
@@ -63,11 +67,16 @@ impl Hooks {
     }
 
     fn install(&mut self) -> Result<()> {
-        for cmd in COMMANDS {
-            let name = format!("imomoe_{}", cmd.name);
+        let commands = COMMANDS
+            .iter()
+            .map(|cmd| (format!("imomoe_{}", cmd.name), cmd.usage));
+        for (name, usage) in commands.chain(std::iter::once((
+            "imomoe_admin".to_owned(),
+            "Open the admin menu",
+        ))) {
             if !s2sdk::AddConsoleCommand(
                 &Str::from_str(&name),
-                &Str::from_str(cmd.usage),
+                &Str::from_str(usage),
                 s2sdk::ConVarFlag::ClientCanExecute,
                 on_console,
                 HookMode::Pre,
@@ -204,7 +213,10 @@ fn with_state<T>(run: impl FnOnce(&mut State) -> T) -> Option<T> {
                             plugify::error!("imomoe_admin authorization check: {}", error);
                         }
                     }
-                    Lifecycle::Disconnect(slot) => state.cleanup_slot(slot),
+                    Lifecycle::Disconnect(slot) => {
+                        state.menus.disconnect(slot);
+                        state.cleanup_slot(slot);
+                    }
                     Lifecycle::Death(slot) => {
                         state.restore_movement(slot);
                     }
@@ -240,11 +252,10 @@ unsafe extern "C" fn on_console(
             return ResultType::Stop;
         };
         let mut args = args.iter().map(|arg| arg.as_str());
-        if let Some(cmd) = args
-            .next()
-            .and_then(|name| name.strip_prefix("imomoe_"))
-            .and_then(|name| lookup(name, false))
-        {
+        let name = args.next().and_then(|name| name.strip_prefix("imomoe_"));
+        if name.is_some_and(|name| name.eq_ignore_ascii_case("admin")) {
+            with_state(|state| menu::open(state, actor));
+        } else if let Some(cmd) = name.and_then(|name| lookup(name, false)) {
             let args: Vec<_> = args.map(str::to_owned).collect();
             with_state(|state| dispatch::run(state, actor, cmd, &args));
         }
@@ -270,12 +281,19 @@ unsafe extern "C" fn on_chat_trigger(
     }
     boundary("chat trigger", ResultType::Stop, || {
         let mut args = args.iter().map(|arg| arg.as_str());
-        let Some(cmd) = args.next().and_then(|name| lookup(name, true)) else {
+        let name = args.next();
+        if name.is_some_and(|name| name.eq_ignore_ascii_case("admin")) {
+            if let Some(actor) = actor(slot) {
+                with_state(|state| menu::open(state, actor));
+            }
+            return ResultType::Stop;
+        }
+        let Some(cmd) = name.and_then(|name| lookup(name, true)) else {
             return ResultType::Continue;
         };
         if let Some(actor) = actor(slot) {
             let args: Vec<_> = args.map(str::to_owned).collect();
-            with_state(|state| dispatch::run(state, actor, cmd, &args));
+            with_state(|state| dispatch::run_chat(state, actor, cmd, &args));
         }
         ResultType::Stop
     })
@@ -295,40 +313,53 @@ unsafe extern "C" fn on_say(slot: i32, _ctx: ConCommandContext, args: &Arr<Str>)
         let Some(actor) = actor(slot) else {
             return ResultType::Stop;
         };
-        with_state(|state| {
-            if let Some((cmd, message)) = private_input(name == "say_team", unquoted) {
-                if let Some(cmd) = lookup(cmd, false) {
-                    dispatch::run(state, actor, cmd, &[message.to_owned()]);
-                }
-                return ResultType::Stop;
-            }
-            if let Some(input) = unquoted.strip_prefix(['!', '/']) {
-                let name = input.split_whitespace().next().unwrap_or_default();
-                if let Some(cmd) = lookup(name, true) {
-                    match words(input) {
-                        Some(args) => dispatch::run(state, actor, cmd, &args[1..]),
-                        None => {
-                            state.reply(actor, "usage", &format!("!{} {}", cmd.chat, cmd.usage))
-                        }
-                    }
-                    return ResultType::Stop;
-                }
-            }
-            match state.has(slot, Kind::Gag) {
-                Ok(false) => ResultType::Continue,
-                Ok(true) => {
-                    state.reply(actor, "gagged", "");
-                    ResultType::Stop
-                }
-                Err(error) => {
-                    plugify::error!("imomoe_admin gag check: {}", error);
-                    state.reply(actor, "failed", "");
-                    ResultType::Stop
-                }
-            }
-        })
-        .unwrap_or(ResultType::Stop)
+        with_state(|state| handle_say(state, actor, slot, name, unquoted))
+            .unwrap_or(ResultType::Stop)
     })
+}
+
+fn handle_say(
+    state: &mut State,
+    actor: Actor,
+    slot: i32,
+    name: &str,
+    unquoted: &str,
+) -> ResultType {
+    if let Some((cmd, message)) = private_input(name == "say_team", unquoted) {
+        if let Some(cmd) = lookup(cmd, false) {
+            dispatch::run(state, actor, cmd, &[message.to_owned()]);
+        }
+        return ResultType::Stop;
+    }
+    if let Some(input) = unquoted.strip_prefix(['!', '/']) {
+        let name = input.split_whitespace().next().unwrap_or_default();
+        if name.eq_ignore_ascii_case("admin") {
+            menu::open(state, actor);
+            return ResultType::Stop;
+        }
+        if let Some(cmd) = lookup(name, true) {
+            match words(input) {
+                Some(args) => dispatch::run_chat(state, actor, cmd, &args[1..]),
+                None => state.reply(actor, "usage", &format!("!{} {}", cmd.chat, cmd.usage)),
+            }
+            return ResultType::Stop;
+        }
+    }
+    if menu::input(state, actor, unquoted) {
+        return ResultType::Stop;
+    }
+    match state.has(slot, Kind::Gag) {
+        Ok(false) => ResultType::Continue,
+        Ok(true) => {
+            state.reply(actor, "gagged", "");
+            ResultType::Stop
+        }
+        Err(error) => {
+            plugify::error!("imomoe_admin gag check: {}", error);
+            state.reply(actor, "failed", "");
+            ResultType::Stop
+        }
+    }
 }
 
 unsafe extern "C" fn on_authenticated(slot: i32, steam_id: u64) {

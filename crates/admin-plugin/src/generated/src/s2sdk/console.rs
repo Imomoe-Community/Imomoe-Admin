@@ -40,6 +40,26 @@ pub type _PrintToChat = unsafe extern "C" fn(i32, &Str);
 #[unsafe(no_mangle)]
 pub static mut __s2sdk_PrintToChat: Option<_PrintToChat> = None;
 
+/// Prints a html message to a specific client in the center of the screen.
+///
+/// # Arguments
+/// * `playerSlot` - (int32): The index of the player's slot to whom the message will be sent.
+/// * `message` - (string): The HTML-formatted message to be printed.
+/// * `duration` - (int32): The duration of the message in seconds.
+#[track_caller]
+#[allow(dead_code, non_snake_case)]
+pub fn PrintCentreHtml(playerSlot: i32, message: &Str, duration: i32) {
+    unsafe {
+        __s2sdk_PrintCentreHtml.expect("PrintCentreHtml function was not found")(
+            playerSlot, message, duration,
+        )
+    }
+}
+pub type _PrintCentreHtml = unsafe extern "C" fn(i32, &Str, i32);
+#[allow(dead_code, non_upper_case_globals)]
+#[unsafe(no_mangle)]
+pub static mut __s2sdk_PrintCentreHtml: Option<_PrintCentreHtml> = None;
+
 /// Prints a colored message to a specific client in the chat area.
 ///
 /// # Arguments

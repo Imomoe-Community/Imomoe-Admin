@@ -19,7 +19,8 @@
 ```mermaid
 flowchart TD
     Perms["plugify-plugin-permissions + permissions-connector-s2<br/>（已安装底座：用户/组/继承/过期/原生 Immunity）"]
-    S2SDK["s2sdk v3.4.3 + fork 补充<br/>（引擎接口：Kick / 禁麦 / ServerCmd / userid / 强制复活）"]
+    S2SDK["s2sdk v3.5.1<br/>（引擎接口：Kick / 禁麦 / ServerCmd）"]
+    NativeBase["Imomoe-NativeBase-CS2 0.4.0<br/>（引擎 userid / 强制复活）"]
     Fixes["Imomoe-ServerFixes-CS2<br/>（聊天准入 / 语音修复 / noclip 恢复 / 换队限流）"]
     Prefix["imomoe_chat_prefix（可选）<br/>（统一聊天前缀）"]
 
@@ -30,6 +31,7 @@ flowchart TD
 
     Admin --> Perms
     Admin --> S2SDK
+    Admin --> NativeBase
     Admin -.可选前缀.-> Prefix
     Admin -.单所有权协同.-> Fixes
 
@@ -118,8 +120,8 @@ flowchart TD
 
 #### 3.1 一期 S2SDK 依赖与二期接口
 
-1. **[原版 v3.4.3](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.4.3/plugify-plugin-s2sdk.pplugin.in)**：`KickClient` 用原生原因码断连，消息用于服务端诊断；`GetClientListening` / `SetClientListening` 读写听者与发言者之间的语音覆盖；`ServerCommand` 执行固定的对局控制命令。
-2. **一期 fork 补充**：`GetClientUserID` 供 `#userid:` 查找真实引擎 ID（将来迁入共享 C++ 底座）；`ForceRespawnClient` 供复活命令使用。
+1. **S2SDK**：固定 fork `3.5.1@54903d0`（SourceSDK `e4e7260`）沿用[官方 `v3.5.1` 导出 ABI](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.5.1/plugify-plugin-s2sdk.pplugin.in)，无自定义导出。`KickClient` 用原生原因码断连，消息用于服务端诊断；`GetClientListening` / `SetClientListening` 读写听者与发言者之间的语音覆盖；`ServerCommand` 执行固定的对局控制命令。
+2. **NativeBase 0.4.0**：`GetClientUserID` 供 `#userid:` 查找真实引擎 ID；`ForceRespawnClient` 供复活命令使用。
 3. **二期菜单实验所需**：
    - `CCSCustomHudLayout` 布局下发、每玩家覆写及 Panel 状态更新接口；
    - `SetInputCaptureEnabled(slot, enabled)` 与 `CS_UM_CustomHudClicked` 点击回调桥接。
@@ -127,7 +129,7 @@ flowchart TD
 #### 3.2 与 `Imomoe-ServerFixes-CS2` 的协同约定
 
 1. **禁言（`!gag`）单所有权**：`Imomoe-ServerFixes-CS2` 已持有聊天命令/频率拦截链路，须避免两套插件各自 Hook 同一原生聊天函数造成冲突；同时需放行或正确路由玩家 `say @<举报>` 与 `say_team @<OP内聊>`，防止未授权泄露给普通玩家。
-2. **`!noclip` 与 `ServerFixes` noclip 恢复边界**：`Imomoe-ServerFixes-CS2 main@67232f8` 已合入所有权协同。关闭 `sv_cheats` 时仅豁免 Admin 持有的当前 pawn；Admin 在死亡、断线、换图或卸载时回收。保留[集成补丁](../integration/serverfixes-noclip-ownership.patch)至包含该提交的 ServerFixes 正式发版。
+2. **`!noclip` 与 `ServerFixes` noclip 恢复边界**：`Imomoe-ServerFixes-CS2 main@67232f8` 已合入所有权协同。关闭 `sv_cheats` 时仅豁免 Admin 持有的当前 pawn；Admin 在死亡、断线、换图或卸载时回收。
 3. **`!team` 换队限流**：`imomoe_team` / `imomoe_swap` 走服务端 `SwitchClientTeam` / `ChangeClientTeam`，不受客户端 `jointeam` 冷却限制。
 
 ---
@@ -135,7 +137,7 @@ flowchart TD
 ### 四、分阶段实施路线与菜单试验计划
 
 1. **Phase 1（核心上线）**：
-   - 使用含 `GetClientUserID` 和 `ForceRespawnClient` 的 S2SDK 构建，以及已合入 noclip 协同的 ServerFixes；
+   - 使用 NativeBase 0.4.0 的 `GetClientUserID` 和 `ForceRespawnClient`，并与已合入 noclip 所有权支持的 ServerFixes 协同；
    - 建立 `Imomoe-Admin` Rust Core/Adapter 工程，实现 `plugify-plugin-permissions` 接入、目标选择器、`PunishmentStore`（SQLite + 文件降级）、上述全部一期命令与跨插件 API；
    - 完成双端构建、单元测试及隔离服[双人客户端验收](ACCEPTANCE.md#最后集中验收真实客户端)。
 2. **Phase 2（统一菜单与 `custom_hud_layout` 实验）**：
@@ -215,10 +217,10 @@ Exported in `imomoe_admin.pplugin`:
 
 ### 3. Engine Extensions & Cross-Plugin Boundaries
 
-- **S2SDK**: [Vanilla v3.4.3](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.4.3/plugify-plugin-s2sdk.pplugin.in) covers `KickClient`, `GetClientListening`/`SetClientListening`, and `ServerCommand`. Phase 1 adds `GetClientUserID` ([`s2sdk-userid.patch`](../integration/s2sdk-userid.patch)) and `ForceRespawnClient`.
+- **S2SDK / NativeBase**: The pinned S2SDK fork `3.5.1@54903d0` (SourceSDK `e4e7260`) has the official `v3.5.1` export ABI and no custom exports. NativeBase `0.4.0` supplies `GetClientUserID` for engine userid lookup and `ForceRespawnClient` for the respawn command.
 - **`Imomoe-ServerFixes-CS2` Cooperation**:
   - Gagging routes through S2SDK command listeners without double-hooking ServerFixes's chat admission hook.
-  - `Imomoe-ServerFixes-CS2 main@67232f8` integrates [`serverfixes-noclip-ownership.patch`](../integration/serverfixes-noclip-ownership.patch) so `sf_noclip_reset 1` preserves only Admin-owned `noclip` on the active pawn handle.
+  - `Imomoe-ServerFixes-CS2 main@67232f8` includes noclip ownership support so `sf_noclip_reset 1` preserves only Admin-owned `noclip` on the active pawn handle.
   - `imomoe_team` / `imomoe_swap` call server-side `SwitchClientTeam` / `ChangeClientTeam`, bypassing client `jointeam` rate limits.
 
 ---

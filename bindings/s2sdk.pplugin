@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/untrustedmodders/plugify/refs/heads/main/schemas/plugin.schema.json",
-  "version": "3.4.3",
+  "version": "3.5.1",
   "name": "s2sdk",
   "description": "Provides functionality for other plugins from Source 2 engine",
   "author": "untrustedmodders",
@@ -28,22 +28,6 @@
     }
   ],
   "methods": [
-    {
-      "name": "GetClientUserID",
-      "group": "Clients",
-      "description": "Returns the current engine userid, or -1 for a disconnected or invalid slot.",
-      "funcName": "GetClientUserID",
-      "paramTypes": [
-        {
-          "name": "playerSlot",
-          "type": "int32",
-          "ref": false
-        }
-      ],
-      "retType": {
-        "type": "int32"
-      }
-    },
     {
       "name": "GetClientSteamID64",
       "group": "Clients",
@@ -452,23 +436,6 @@
       }
     },
     {
-      "name": "ForceRespawnClient",
-      "group": "Clients",
-      "description": "Forces a full engine respawn for a player, including when the current pawn is alive. Supported in CS2.",
-      "funcName": "ForceRespawnClient",
-      "paramTypes": [
-        {
-          "name": "playerSlot",
-          "type": "int32",
-          "ref": false,
-          "description": "The index of the player's slot to respawn."
-        }
-      ],
-      "retType": {
-        "type": "void"
-      }
-    },
-    {
       "name": "ForcePlayerSuicide",
       "group": "Clients",
       "description": "Forces a player to commit suicide.",
@@ -709,6 +676,35 @@
           "type": "string",
           "ref": false,
           "description": "The message to be printed in the chat area."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "PrintCentreHtml",
+      "group": "Console",
+      "description": "Prints a html message to a specific client in the center of the screen.",
+      "funcName": "PrintCentreHtml",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot to whom the message will be sent."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "ref": false,
+          "description": "The HTML-formatted message to be printed."
+        },
+        {
+          "name": "duration",
+          "type": "int32",
+          "ref": false,
+          "description": "The duration of the message in seconds."
         }
       ],
       "retType": {
