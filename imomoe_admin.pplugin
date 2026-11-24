@@ -13,7 +13,7 @@
     },
     {
       "name": "imomoe_native_base",
-      "constraints": "0.1.0"
+      "constraints": "0.1.0 || 0.4.0"
     },
     {
       "name": "permissions",

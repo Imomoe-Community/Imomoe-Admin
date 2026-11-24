@@ -36,8 +36,8 @@ cargo build --release --workspace --locked
 推送 `main` 和以 `main` 为目标的 PR 在 Windows/Linux 运行以上门禁，无需下载共享 ZIP。
 The Windows/Linux gates run on pushes and PRs targeting `main` without downloading the shared ZIPs.
 
-经授权手动运行 CI 时，组包步骤从 [NativeBase v0.1.0 Release](https://github.com/Imomoe-Community/Imomoe-NativeBase-CS2/releases/tag/v0.1.0) 下载同平台的 NativeBase 与 fork S2SDK ZIP，校验配对后只上传 `admin-<platform>.zip`。先确认两个平台的 Release 资产均可下载；NativeBase 的 Actions artifacts 不会自动出现在该地址。
-An approved manual CI run downloads the matching NativeBase and fork S2SDK ZIPs from that Release for pairing validation and uploads only `admin-<platform>.zip`. Both platforms' Release assets must be available first; NativeBase's Actions artifacts do not appear there automatically.
+经授权手动运行 CI 时，组包步骤从 [`runtime/nativebase.json`](runtime/nativebase.json) 选定的 NativeBase Release 下载两个 ZIP，并按 [`runtime/s2sdk.json`](runtime/s2sdk.json) 核对 SDK 来源；只上传 `admin-<platform>.zip`。本地已有共享 ZIP 时，用 `scripts/package.py --dependency-dir` 指向其目录。手动 CI 要等两个平台的 Release 资产均可下载；NativeBase 的 Actions artifacts 不会自动出现在该地址。
+An approved manual CI run reads the package pins from `runtime/nativebase.json` and `runtime/s2sdk.json`, downloads both ZIPs from the selected NativeBase Release, and uploads only `admin-<platform>.zip`. To validate local provider builds, pass their shared ZIP directory to `scripts/package.py --dependency-dir`. Both platforms' Release assets must be available first; NativeBase's Actions artifacts do not appear there automatically.
 
 ---
 

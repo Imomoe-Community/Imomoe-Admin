@@ -20,7 +20,7 @@ cargo build --release --workspace --locked
 
 在隔离测试服验证时，先确认以下配套依赖满足基线要求：
 
-- **S2SDK / NativeBase**：固定 S2SDK `3.4.3@e2b88d3` 提供 `ForceRespawnClient`，NativeBase 0.1.0 提供真实引擎 `GetClientUserID`。
+- **S2SDK / NativeBase**：使用适配当前 CS2 的同一组 S2SDK fork 与 NativeBase。S2SDK 须提供 `ForceRespawnClient`，NativeBase 须提供 `GetClientUserID`。验证当前发布配对时，用 `scripts/package.py --dependency-dir` 核对实际 ZIP 的 ABI 和 SDK 来源。
 - **ServerFixes（可选）**：启用 `sf_noclip_reset 1` 时，选用包含 `Imomoe-ServerFixes-CS2 main@67232f8` 的构建（[`serverfixes-noclip-ownership.patch`](../integration/serverfixes-noclip-ownership.patch)）。
 - **Permissions**：`permissions >= 1.3.1`、connector 和 storage。使用 [权限组件复建与安装步骤](../README.md#权限组件复建--rebuild-permissions)；在隔离 SQLite 中用有昵称和既定 lastvisit_at 的合成离线资料，检查 Admin 免疫放行与拒绝结果，并核对两个字段均不变。
 
@@ -67,7 +67,7 @@ cargo build --release --workspace --locked
 
 Confirm the isolated test server meets these runtime prerequisites:
 
-- **S2SDK / NativeBase**: Pinned S2SDK `3.4.3@e2b88d3` provides `ForceRespawnClient`; NativeBase 0.1.0 provides engine `GetClientUserID`.
+- **S2SDK / NativeBase**: Install a matched S2SDK fork and NativeBase pair for the current CS2 build. The SDK must supply `ForceRespawnClient` and NativeBase must supply `GetClientUserID`. Use `scripts/package.py --dependency-dir` to verify the actual ZIPs' ABI and SDK provenance for the selected release pair.
 - **ServerFixes (Optional)**: When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8` ([`serverfixes-noclip-ownership.patch`](../integration/serverfixes-noclip-ownership.patch)).
 - **Permissions**: `permissions >= 1.3.1`, connector, and storage. Follow the [permissions rebuild and install steps](../README.md#权限组件复建--rebuild-permissions). In an isolated SQLite database, use synthetic offline profiles with known names and last visit timestamps; verify Admin's immunity allow/deny results and that both fields are unchanged.
 

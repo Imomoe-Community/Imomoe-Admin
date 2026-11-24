@@ -75,9 +75,11 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             $binary = ".work/steamrt-target/$target/release/libimomoe_admin.so"
           }
-          $base = 'https://github.com/Imomoe-Community/Imomoe-NativeBase-CS2/releases/download/v0.1.0'
+          $native = Get-Content -Raw runtime/nativebase.json | ConvertFrom-Json
+          $sdk = Get-Content -Raw runtime/s2sdk.json | ConvertFrom-Json
+          $base = "$($native.repository)/releases/download/v$($native.version)"
           New-Item -ItemType Directory -Force .work/dependencies | Out-Null
-          foreach ($asset in @("imomoe-native-base-0.1.0-$platform.zip", "s2sdk-fork-3.4.3-e2b88d3-$platform.zip")) {
+          foreach ($asset in @("imomoe-native-base-$($native.version)-$platform.zip", "s2sdk-fork-$($sdk.version)-$($sdk.commit.Substring(0,7))-$platform.zip")) {
             Invoke-WebRequest "$base/$asset" -OutFile ".work/dependencies/$asset"
           }
           python scripts/package.py --platform $platform --binary $binary --dependency-dir .work/dependencies --archive "dist/admin-$platform.zip"

@@ -3,8 +3,8 @@
 
 
 def check_abi(provider, consumer):
-    if (provider["name"], provider["version"]) != (consumer["name"], consumer["version"]):
-        raise ValueError(f"Expected {consumer['name']} {consumer['version']}")
+    if provider["name"] != consumer["name"]:
+        raise ValueError(f"Expected {consumer['name']}, got {provider['name']}")
 
     def kind(part):
         return part["type"], bool(part.get("ref")), part.get("prototype"), part.get("enum")

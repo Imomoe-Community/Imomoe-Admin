@@ -15,22 +15,21 @@ PLUGIFY = "game/csgo/addons/plugify"
 
 
 def verify_dependencies(folder, platform):
-    lock = json.loads((ROOT / "runtime/s2sdk.json").read_bytes())
-    admin = json.loads((ROOT / "imomoe_admin.pplugin").read_bytes())
-    declared = {item["name"]: item["constraints"] for item in admin["dependencies"] if "constraints" in item}
+    sdk = json.loads((ROOT / "runtime/s2sdk.json").read_bytes())
+    nativebase = json.loads((ROOT / "runtime/nativebase.json").read_bytes())
     envs = f"{PLUGIFY}/envs"
-    for name, path, asset in (
-        ("s2sdk", "plugify-plugin-s2sdk/plugify-plugin-s2sdk.pplugin",
-         f"s2sdk-fork-{lock['version']}-{lock['commit'][:7]}-{platform}.zip"),
-        ("imomoe_native_base", "imomoe_native_base/imomoe_native_base.pplugin",
-         f"imomoe-native-base-{declared['imomoe_native_base']}-{platform}.zip"),
+    for name, version, path, asset in (
+        ("s2sdk", sdk["version"], "plugify-plugin-s2sdk/plugify-plugin-s2sdk.pplugin",
+         f"s2sdk-fork-{sdk['version']}-{sdk['commit'][:7]}-{platform}.zip"),
+        ("imomoe_native_base", nativebase["version"], "imomoe_native_base/imomoe_native_base.pplugin",
+         f"imomoe-native-base-{nativebase['version']}-{platform}.zip"),
     ):
         with ZipFile(folder / asset) as archive:
             loaded = json.loads(archive.read(f"{envs}/{path}"))
+            if version != loaded["version"]:
+                raise ValueError(f"Expected the pinned {name} {version}, got {loaded['version']}")
             check_abi(loaded, json.loads((ROOT / "bindings" / f"{name}.pplugin").read_bytes()))
-            if declared[name] != loaded["version"]:
-                raise ValueError(f"Admin does not pin the selected {name} version")
-            if name == "s2sdk" and json.loads(archive.read(f"{envs}/plugify-plugin-s2sdk/s2sdk-fork.json")) != lock:
+            if name == "s2sdk" and json.loads(archive.read(f"{envs}/plugify-plugin-s2sdk/s2sdk-fork.json")) != sdk:
                 raise ValueError("SDK fork identity mismatch")
 
 

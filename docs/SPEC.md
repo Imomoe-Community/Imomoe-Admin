@@ -119,7 +119,7 @@ flowchart TD
 #### 3.1 一期 S2SDK 依赖与二期接口
 
 1. **[原版 v3.4.3](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.4.3/plugify-plugin-s2sdk.pplugin.in)**：`KickClient` 用原生原因码断连，消息用于服务端诊断；`GetClientListening` / `SetClientListening` 读写听者与发言者之间的语音覆盖；`ServerCommand` 执行固定的对局控制命令。
-2. **依赖**：NativeBase 0.1.0 的 `GetClientUserID` 供 `#userid:` 查找真实引擎 ID；固定 S2SDK fork 的 `ForceRespawnClient` 供复活命令使用。
+2. **依赖**：NativeBase 0.1.0 或 0.4.0 的 `GetClientUserID` 供 `#userid:` 查找真实引擎 ID；配套 S2SDK fork 的 `ForceRespawnClient` 供复活命令使用。运行期兼容约束与组包选定的版本分开。
 3. **二期菜单实验所需**：
    - `CCSCustomHudLayout` 布局下发、每玩家覆写及 Panel 状态更新接口；
    - `SetInputCaptureEnabled(slot, enabled)` 与 `CS_UM_CustomHudClicked` 点击回调桥接。
@@ -135,7 +135,7 @@ flowchart TD
 ### 四、分阶段实施路线与菜单试验计划
 
 1. **Phase 1（核心上线）**：
-   - 使用 NativeBase 0.1.0 的 `GetClientUserID` 和固定 S2SDK fork 的 `ForceRespawnClient`，以及已合入 noclip 协同的 ServerFixes；
+   - 使用 NativeBase 的 `GetClientUserID` 和固定 S2SDK fork 的 `ForceRespawnClient`，以及已合入 noclip 协同的 ServerFixes；
    - 建立 `Imomoe-Admin` Rust Core/Adapter 工程，实现 `plugify-plugin-permissions` 接入、目标选择器、`PunishmentStore`（SQLite + 文件降级）、上述全部一期命令与跨插件 API；
    - 完成双端构建、单元测试及隔离服[双人客户端验收](ACCEPTANCE.md#最后集中验收真实客户端)。
 2. **Phase 2（统一菜单与 `custom_hud_layout` 实验）**：
@@ -215,7 +215,7 @@ Exported in `imomoe_admin.pplugin`:
 
 ### 3. Engine Extensions & Cross-Plugin Boundaries
 
-- **S2SDK / NativeBase**: Use pinned S2SDK `3.4.3@e2b88d3` for `ForceRespawnClient` and NativeBase 0.1.0 for the engine `GetClientUserID` export.
+- **S2SDK / NativeBase**: Use the matched S2SDK fork for `ForceRespawnClient` and NativeBase 0.1.0 or 0.4.0 for the engine `GetClientUserID` export. The package pins are separate from these runtime requirements.
 - **`Imomoe-ServerFixes-CS2` Cooperation**:
   - Gagging routes through S2SDK command listeners without double-hooking ServerFixes's chat admission hook.
   - `Imomoe-ServerFixes-CS2 main@67232f8` integrates [`serverfixes-noclip-ownership.patch`](../integration/serverfixes-noclip-ownership.patch) so `sf_noclip_reset 1` preserves only Admin-owned `noclip` on the active pawn handle.
