@@ -9,12 +9,24 @@ use imomoe_admin_core::{
 };
 use plugify::{Str, Vec3};
 
-pub fn run(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) {
-    if !cmd
-        .permissions
+pub(crate) fn online_punishments(cmd: &Command) -> &'static [Kind] {
+    match cmd.name {
+        "ban" => &[Kind::Ban],
+        "mute" | "unmute" => &[Kind::Mute],
+        "gag" | "ungag" => &[Kind::Gag],
+        "silence" | "unsilence" => &[Kind::Mute, Kind::Gag],
+        _ => &[],
+    }
+}
+
+pub fn authorized(actor: Actor, cmd: &Command) -> bool {
+    cmd.permissions
         .iter()
         .all(|node| engine::allowed(actor, node))
-    {
+}
+
+pub fn run(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) {
+    if !authorized(actor, cmd) {
         state.reply(actor, "denied", "");
         return;
     }
@@ -402,13 +414,7 @@ fn dispatch(state: &mut State, actor: Actor, cmd: &Command, args: &[String]) -> 
         return Ok(());
     }
 
-    let kinds: &[Kind] = match cmd.name {
-        "ban" => &[Kind::Ban],
-        "mute" | "unmute" => &[Kind::Mute],
-        "gag" | "ungag" => &[Kind::Gag],
-        "silence" | "unsilence" => &[Kind::Mute, Kind::Gag],
-        _ => &[],
-    };
+    let kinds = online_punishments(cmd);
     let rule = if !kinds.is_empty() && !cmd.name.starts_with("un") {
         let Some(rule) = punishment_args(state, actor, kinds[0], &args[1..]) else {
             return Ok(());

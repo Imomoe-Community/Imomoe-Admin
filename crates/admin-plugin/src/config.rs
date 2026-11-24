@@ -159,13 +159,16 @@ impl Config {
     }
 
     pub fn phrase<'a>(&'a self, language: &str, key: &'a str) -> &'a str {
-        let chinese = language
-            .get(..2)
-            .is_some_and(|prefix| prefix.eq_ignore_ascii_case("zh"));
-        self.translations[usize::from(chinese)]
+        self.translations[usize::from(is_chinese(language))]
             .get(key)
             .or_else(|| self.translations[0].get(key))
             .map(String::as_str)
             .unwrap_or(key)
     }
+}
+
+pub(crate) fn is_chinese(language: &str) -> bool {
+    language
+        .get(..2)
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("zh"))
 }

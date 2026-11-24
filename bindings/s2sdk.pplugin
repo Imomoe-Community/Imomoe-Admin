@@ -700,6 +700,35 @@
       }
     },
     {
+      "name": "PrintCentreHtml",
+      "group": "Console",
+      "description": "Prints a html message to a specific client in the center of the screen.",
+      "funcName": "PrintCentreHtml",
+      "paramTypes": [
+        {
+          "name": "playerSlot",
+          "type": "int32",
+          "ref": false,
+          "description": "The index of the player's slot to whom the message will be sent."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "ref": false,
+          "description": "The HTML-formatted message to be printed."
+        },
+        {
+          "name": "duration",
+          "type": "int32",
+          "ref": false,
+          "description": "The duration of the message in seconds."
+        }
+      ],
+      "retType": {
+        "type": "void"
+      }
+    },
+    {
       "name": "PrintToChatColored",
       "group": "Console",
       "description": "Prints a colored message to a specific client in the chat area.",

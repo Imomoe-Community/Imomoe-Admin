@@ -13,7 +13,7 @@ $names = @{
         'AddConsoleCommand','RemoveCommand','AddCommandListener','RemoveCommandListener',
         'GetMaxClients','IsClientInGame','IsClientConnected','IsClientAuthorized','IsClientAlive','IsFakeClient','IsClientSourceTV',
         'GetClientName','GetClientTeam','GetClientSteamID64','GetClientLanguageCode','GetClientPawn','EntPointerToEntHandle',
-        'PrintToChat','PrintToChatColored','PrintToServer','KickClient','GetClientListening','SetClientListening',
+        'PrintToChat','PrintToChatColored','PrintToServer','PrintCentreHtml','KickClient','GetClientListening','SetClientListening',
         'OnClientAuthenticated_Register','OnClientAuthenticated_Unregister','OnClientDisconnect_Register',
         'OnClientDisconnect_Unregister','OnClientPutInServer_Register','OnClientPutInServer_Unregister','OnMapEnd_Register','OnMapEnd_Unregister','OnGameFrame_Register',
         'OnGameFrame_Unregister','OnEntityDeleted_Register','OnEntityDeleted_Unregister',

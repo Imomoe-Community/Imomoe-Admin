@@ -22,6 +22,11 @@ const CLIENTS: i32 = 4;
 
 struct World {
     messages: Vec<(i32, String)>,
+    panels: Vec<(i32, String)>,
+    accounts: [u64; 4],
+    zh_slot: Option<i32>,
+    revoked_mute: Option<u64>,
+    slapped: Vec<i32>,
     kicks: Vec<(i32, Reason, String)>,
     voice: [[ListenOverride; 4]; 4],
     cvar_reads: Vec<u64>,
@@ -81,7 +86,7 @@ unsafe extern "C" fn user_id(slot: i32) -> i32 {
     slot + 10
 }
 unsafe extern "C" fn account(slot: i32) -> u64 {
-    ACCOUNT + slot as u64
+    world(|w| w.accounts[slot as usize])
 }
 unsafe extern "C" fn name(slot: i32) -> Str {
     Str::from_str([OP, DEPUTY, PLAYER, "Training Bot"][slot as usize])
@@ -98,8 +103,18 @@ unsafe extern "C" fn alive(slot: i32) -> bool {
 unsafe extern "C" fn fake(slot: i32) -> bool {
     slot == 3
 }
-unsafe extern "C" fn language(_: i32) -> Str {
-    Str::from_str("en")
+unsafe extern "C" fn language(slot: i32) -> Str {
+    Str::from_str(if world(|w| w.zh_slot == Some(slot)) {
+        "zh-Hans"
+    } else {
+        "en"
+    })
+}
+unsafe extern "C" fn center(slot: i32, html: &Str, _: i32) {
+    world(|w| w.panels.push((slot, html.as_str().into())));
+}
+unsafe extern "C" fn push(slot: i32, _: &Vec3) {
+    world(|w| w.slapped.push(slot));
 }
 unsafe extern "C" fn chat(slot: i32, message: &Str) {
     world(|w| w.messages.push((slot, message.as_str().into())));
@@ -118,6 +133,9 @@ unsafe extern "C" fn set_listen(receiver: i32, sender: i32, value: ListenOverrid
 }
 unsafe extern "C" fn permission(id: u64, node: &Str) -> perm::Status {
     let node = node.as_str();
+    if node == "imomoe.admin.mute" && world(|w| w.revoked_mute == Some(id)) {
+        return perm::Status::Disallow;
+    }
     match id - ACCOUNT {
         0 => perm::Status::Allow,
         1 if matches!(
@@ -209,6 +227,11 @@ impl Session {
         });
         *WORLD.lock().unwrap() = Some(World {
             messages: Vec::new(),
+            panels: Vec::new(),
+            accounts: [ACCOUNT, ACCOUNT + 1, ACCOUNT + 2, ACCOUNT + 3],
+            zh_slot: None,
+            revoked_mute: None,
+            slapped: Vec::new(),
             kicks: Vec::new(),
             voice: [[ListenOverride::Default; 4]; 4],
             cvar_reads: Vec::new(),
@@ -236,6 +259,8 @@ impl Session {
             sdk::__s2sdk_GetClientLanguageCode = Some(language);
             sdk::__s2sdk_PrintToChat = Some(chat);
             sdk::__s2sdk_PrintToServer = Some(console);
+            sdk::__s2sdk_PrintCentreHtml = Some(center);
+            sdk::__s2sdk_ApplyAbsVelocityImpulseToClient = Some(push);
             sdk::__s2sdk_KickClient = Some(kick);
             sdk::__s2sdk_GetClientListening = Some(listen);
             sdk::__s2sdk_SetClientListening = Some(set_listen);
@@ -288,6 +313,123 @@ fn messages() -> Vec<(i32, String)> {
     world(|w| std::mem::take(&mut w.messages))
 }
 
+fn say(slot: i32, text: &str) -> sdk::ResultType {
+    admin::with_state(|state| admin::handle_say(state, Actor::Player(slot), slot, "say", text))
+        .unwrap()
+}
+
+fn panel(slot: i32) -> String {
+    world(|w| {
+        w.panels
+            .iter()
+            .rev()
+            .find(|(player, _)| *player == slot)
+            .unwrap()
+            .1
+            .clone()
+    })
+}
+
+#[test]
+fn text_menu_routes_paged_choices_per_player_and_runs_existing_actions() {
+    let session = Session::start();
+    use sdk::ResultType::{Continue, Stop};
+    world(|w| w.zh_slot = Some(0));
+
+    assert_eq!(say(2, "1"), Continue);
+    assert_eq!(say(2, "!admin"), Stop);
+    assert_eq!(messages(), [(2, "Permission denied.".into())]);
+    assert!(world(|w| w.panels.is_empty()));
+    assert_eq!(say(0, "!admin"), Stop);
+    assert!(panel(0).contains("管理菜单") && panel(0).contains("9. 下一页"));
+    assert_eq!(say(1, "!admin"), Stop);
+    let first = panel(1);
+    assert!(first.contains("Mute voice") && !first.contains("Slap"));
+    assert_eq!(say(1, "9"), Continue);
+    assert_eq!(say(0, "9"), Stop);
+    assert!(panel(0).contains("拉到身边") && panel(0).contains("8. 上一页"));
+    assert_eq!(panel(1), first);
+    assert_eq!(say(2, "1"), Continue);
+    assert_eq!(say(1, "10"), Continue);
+    assert_eq!(say(1, "1 extra"), Continue);
+    assert_eq!(say(1, "!admins"), Stop);
+    assert!(
+        messages()
+            .iter()
+            .any(|(slot, text)| *slot == 1 && text.contains(OP))
+    );
+
+    assert_eq!(say(1, "1"), Stop);
+    assert!(panel(1).contains("Choose player") && panel(1).contains(PLAYER));
+    assert!(!panel(1).contains("Training Bot"));
+    assert_eq!(say(1, "0"), Stop);
+    assert_eq!(panel(1), first);
+    assert_eq!(say(1, "1"), Stop);
+    assert_eq!(say(1, "2"), Stop);
+    assert_eq!(panel(1), " ");
+    assert_eq!(say(1, "2"), Continue);
+    assert!(messages().contains(&(1, format!("Applied: mute · {PLAYER}"))));
+    admin::with_state(|state| {
+        let rows = state
+            .store
+            .active(ACCOUNT + 2, crate::state::now())
+            .unwrap();
+        let mute = rows.iter().find(|row| row.kind == Kind::Mute).unwrap();
+        assert_eq!(mute.actor, Some(ACCOUNT + 1));
+        assert_eq!(mute.expires_at.unwrap() - mute.created_at, 600);
+    })
+    .unwrap();
+    let audit = fs::read_to_string(session.dir.path().join("data/audit.log")).unwrap();
+    assert!(audit.lines().any(|line| {
+        let e: serde_json::Value = serde_json::from_str(line).unwrap();
+        e["command"] == "mute" && e["target"] == PLAYER && e["actor"] == ACCOUNT + 1
+    }));
+
+    assert_eq!(say(0, "8"), Stop);
+    assert_eq!(say(0, "1"), Stop);
+    assert!(panel(0).contains(PLAYER));
+    assert_eq!(say(0, "3"), Stop);
+    assert_eq!(world(|w| w.slapped.clone()), [2]);
+    assert_eq!(say(0, "!admin"), Stop);
+    assert_eq!(say(0, "0"), Stop);
+    assert_eq!(say(0, "1"), Continue);
+}
+
+#[test]
+fn text_menu_rechecks_permission_and_immunity_and_never_retargets_a_departed_player() {
+    let _session = Session::start();
+    use sdk::ResultType::{Continue, Stop};
+
+    assert_eq!(say(1, "!admin"), Stop);
+    assert_eq!(say(1, "1"), Stop);
+    assert_eq!(say(1, "1"), Stop);
+    assert!(messages().contains(&(1, format!("Not allowed to target: {OP}"))));
+    assert!(!admin::IsClientMuted(0));
+
+    assert_eq!(say(1, "!admin"), Stop);
+    assert_eq!(say(1, "1"), Stop);
+    world(|w| w.revoked_mute = Some(ACCOUNT + 1));
+    assert_eq!(say(1, "2"), Stop);
+    assert_eq!(messages(), [(1, "Permission denied.".into())]);
+    assert!(!admin::IsClientMuted(2));
+
+    world(|w| w.revoked_mute = None);
+    assert_eq!(say(1, "!admin"), Stop);
+    assert_eq!(say(1, "1"), Stop);
+    admin::lifecycle(admin::Lifecycle::Disconnect(2));
+    // Reuse both the slot and userid for a new account before the digit arrives.
+    world(|w| w.accounts[2] = ACCOUNT + 9);
+    assert_eq!(say(1, "2"), Stop);
+    assert_eq!(messages(), [(1, "No matching player.".into())]);
+    assert!(!admin::IsClientMuted(2));
+
+    assert_eq!(say(1, "!admin"), Stop);
+    admin::lifecycle(admin::Lifecycle::Disconnect(1));
+    assert_eq!(say(1, "1"), Continue);
+    assert_eq!(say(0, "!admin"), Stop);
+    admin::lifecycle(admin::Lifecycle::MapEnd);
+    assert_eq!(say(0, "1"), Continue);
+}
 #[test]
 fn high_risk_commands_reject_groups_and_ambiguity_before_any_penalty() {
     let _session = Session::start();

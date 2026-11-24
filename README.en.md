@@ -60,6 +60,7 @@ python scripts/package.py --platform windows-x64 --binary target/release/imomoe_
 
 All 35 console commands, chat aliases, and default permission nodes are documented in [docs/SPEC.md](docs/SPEC.md#english):
 
+- **Text Menu**: Open with `!admin` in chat or `imomoe_admin` in the game console. Type the shown digits in chat to choose an action and player; `0` goes back or exits. No addon required; actions keep their command permissions, immunity and defaults.
 - **Bans & Unbans**: `imomoe_ban "player name" 2h <reason>` bans an online target; `imomoe_addban <SteamID64> 7d <reason>` records an offline ban (`0` = permanent; omitted uses configured default). Offline actions also load and compare `permissions` immunity. Clients receive CS2 native disconnect prompts while admins inspect reasons and expiry via `imomoe_banlist`.
 - **Comms & Selectors**: `!silence #slot:4 10m` applies both voice mute and text gag (requires both `imomoe.admin.mute` and `imomoe.admin.gag`). Use `#userid:12` to target an exact engine userid; bare `#12` matches both slot and userid and refuses execution if ambiguous.
 - **Admin Chat & Reports**: `!a <message>` or `say_team @<message>` routes exclusively to online admins holding `imomoe.admin.chat`. Player `say @<message>` and `!report <message>` forward to online admins and log to `data/reports.log` without leaking into public chat.

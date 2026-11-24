@@ -185,7 +185,7 @@ pub fn require_bindings() -> Result<(), Box<dyn std::error::Error>> {
         __s2sdk_IsClientSourceTV, __s2sdk_GetClientName, __s2sdk_GetClientTeam,
         __s2sdk_GetClientSteamID64, __s2sdk_GetClientLanguageCode, __s2sdk_GetClientPawn,
         __s2sdk_EntPointerToEntHandle, __s2sdk_PrintToChat, __s2sdk_PrintToChatColored, __s2sdk_PrintToServer,
-        __s2sdk_KickClient, __s2sdk_GetClientListening, __s2sdk_SetClientListening,
+        __s2sdk_PrintCentreHtml, __s2sdk_KickClient, __s2sdk_GetClientListening, __s2sdk_SetClientListening,
         __s2sdk_OnClientAuthenticated_Register, __s2sdk_OnClientAuthenticated_Unregister,
         __s2sdk_OnClientDisconnect_Register, __s2sdk_OnClientDisconnect_Unregister, __s2sdk_OnClientPutInServer_Register, __s2sdk_OnClientPutInServer_Unregister,
         __s2sdk_OnMapEnd_Register, __s2sdk_OnMapEnd_Unregister,
