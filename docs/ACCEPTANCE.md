@@ -20,7 +20,7 @@ cargo build --release --workspace --locked
 
 在隔离测试服验证时，先确认以下配套依赖满足基线要求：
 
-- **S2SDK / NativeBase**：配对安装 `s2sdk-fork-3.5.1-abc161b-<platform>.zip`（SourceSDK `e4e7260`，官方 `v3.5.1` 导出 ABI，无自定义导出）和 `imomoe-native-base-0.4.0-<platform>.zip`（提供 `GetClientUserID` 与 `ForceRespawnClient`）。用 `scripts/package.py --dependency-dir` 核对实际 ZIP 的 ABI 和 SDK 来源。
+- **S2SDK / NativeBase**：配对安装 `s2sdk-fork-3.5.1-019e5b7-<platform>.zip`（SourceSDK `e4e7260`，官方 `v3.5.1` 导出 ABI，无自定义导出）和 `imomoe-native-base-0.4.0-<platform>.zip`（提供 `GetClientUserID` 与 `ForceRespawnClient`）。用 `scripts/package.py --dependency-dir` 核对实际 ZIP 的 ABI 和 SDK 来源。
 - **ServerFixes（可选）**：启用 `sf_noclip_reset 1` 时，选用包含 `Imomoe-ServerFixes-CS2 main@67232f8` 的构建，该提交已合入 noclip 所有权协同。
 - **Permissions**：`permissions >= 1.3.1`、connector 和 storage。使用 [权限组件复建与安装步骤](../README.md#权限组件复建--rebuild-permissions)；在隔离 SQLite 中用有昵称和既定 lastvisit_at 的合成离线资料，检查 Admin 免疫放行与拒绝结果，并核对两个字段均不变。
 
@@ -67,7 +67,7 @@ cargo build --release --workspace --locked
 
 Confirm the isolated test server meets these runtime prerequisites:
 
-- **S2SDK / NativeBase**: Install `s2sdk-fork-3.5.1-abc161b-<platform>.zip` (SourceSDK `e4e7260`, official `v3.5.1` export ABI, no custom exports) with `imomoe-native-base-0.4.0-<platform>.zip` (supplies `GetClientUserID` and `ForceRespawnClient`). Use `scripts/package.py --dependency-dir` to check the ZIPs' ABI and SDK provenance.
+- **S2SDK / NativeBase**: Install `s2sdk-fork-3.5.1-019e5b7-<platform>.zip` (SourceSDK `e4e7260`, official `v3.5.1` export ABI, no custom exports) with `imomoe-native-base-0.4.0-<platform>.zip` (supplies `GetClientUserID` and `ForceRespawnClient`). Use `scripts/package.py --dependency-dir` to check the ZIPs' ABI and SDK provenance.
 - **ServerFixes (Optional)**: When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8`, which includes noclip ownership support.
 - **Permissions**: `permissions >= 1.3.1`, connector, and storage. Follow the [permissions rebuild and install steps](../README.md#权限组件复建--rebuild-permissions). In an isolated SQLite database, use synthetic offline profiles with known names and last visit timestamps; verify Admin's immunity allow/deny results and that both fields are unchanged.
 

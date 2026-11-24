@@ -27,7 +27,7 @@
 | Component | Requirement & Notes |
 | :--- | :--- |
 | **Plugify Host** | `v3.1.0+` with Plugify Rust & Go language modules, PolyHook, Configs, and Translations. |
-| **S2SDK** | Pinned fork `3.5.1@abc161b` (SourceSDK `e4e7260`), with the official `v3.5.1` export ABI and no custom exports. |
+| **S2SDK** | Pinned fork `3.5.1@019e5b7` (SourceSDK `e4e7260`), with the official `v3.5.1` export ABI and no custom exports. |
 | **NativeBase** | `0.4.0` supplies `GetClientUserID` and `ForceRespawnClient`. Admin can be installed without FunRounds. |
 | **Permissions** | `permissions >=1.3.1` and `permissions_connector_s2`. |
 | **ServerFixes (Optional)** | When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8`, which includes noclip ownership support. |
@@ -46,7 +46,7 @@
 ### Installation
 
 1. Obtain the official [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify), [Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0), [C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5), [PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9), [Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2). Install the Admin permissions dependencies separately: [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases), [Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases), [Translations](https://github.com/untrustedmodders/plugify-plugin-translations/releases), [permissions-connector-s2](https://github.com/fr0nch/permissions-connector-s2/releases), [permissions-storage](https://github.com/fr0nch/permissions-storage/releases). Keep the official package manifests and resources and replace the two libraries as described above.
-2. Stop the server. Install the matching-platform `s2sdk-fork-3.5.1-abc161b-<platform>.zip` and `imomoe-native-base-0.4.0-<platform>.zip`, then copy the Admin ZIP's `game/` tree into the server root. The Admin ZIP does not supply the shared plugins or permissions components.
+2. Stop the server. Install the matching-platform `s2sdk-fork-3.5.1-019e5b7-<platform>.zip` and `imomoe-native-base-0.4.0-<platform>.zip`, then copy the Admin ZIP's `game/` tree into the server root. The Admin ZIP does not supply the shared plugins or permissions components.
 3. If FunRounds already uses this exact pair, install only Admin and any missing permissions components. Before switching pairs, make sure existing consumers support the new pair and move any superseded same-name SDK or old `funrounds_native` out of the plugin scan path. Avoid running `mamba update --all` over the pinned SDK.
 4. Keep existing Admin configuration, storage and announcements. On rollback, stop the server and remove only Admin if the other consumer still uses the shared dependencies. To return to the old provider, restore the entire previous consumer/SDK/provider/configuration set.
 

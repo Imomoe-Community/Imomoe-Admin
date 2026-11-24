@@ -29,7 +29,7 @@
 | 组件 / <sub><sup>Component</sup></sub> | 版本与说明 / <sub><sup>Requirement & Notes</sup></sub> |
 | :--- | :--- |
 | **Plugify 框架**<br><sub><sup>Plugify Host</sup></sub> | `v3.1.0+`，需加载 Rust / Go 语言模块、PolyHook、Configs 与 Translations。<br><sub><sup>`v3.1.0+` with Rust and Go language modules, PolyHook, Configs, and Translations.</sup></sub> |
-| **S2SDK** | 固定 fork `3.5.1@abc161b`（SourceSDK `e4e7260`），导出 ABI 与官方 `v3.5.1` 一致，无自定义导出。<br><sub><sup>Pinned fork `3.5.1@abc161b` (SourceSDK `e4e7260`), with the official `v3.5.1` export ABI and no custom exports.</sup></sub> |
+| **S2SDK** | 固定 fork `3.5.1@019e5b7`（SourceSDK `e4e7260`），导出 ABI 与官方 `v3.5.1` 一致，无自定义导出。<br><sub><sup>Pinned fork `3.5.1@019e5b7` (SourceSDK `e4e7260`), with the official `v3.5.1` export ABI and no custom exports.</sup></sub> |
 | **NativeBase** | `0.4.0` 提供 `GetClientUserID` 和 `ForceRespawnClient`。Admin 可独立安装，不需要 FunRounds。<br><sub><sup>`0.4.0` supplies `GetClientUserID` and `ForceRespawnClient`; FunRounds is not required.</sup></sub> |
 | **Permissions** | `permissions >=1.3.1` 与 `permissions_connector_s2`。<br><sub><sup>`permissions >=1.3.1` and `permissions_connector_s2`.</sup></sub> |
 | **ServerFixes（可选）**<br><sub><sup>ServerFixes (Optional)</sup></sub> | 若启用 `sf_noclip_reset 1`，请使用包含 `Imomoe-ServerFixes-CS2 main@67232f8` 的构建，该提交已合入 noclip 所有权协同。<br><sub><sup>When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8`, which includes noclip ownership support.</sup></sub> |
@@ -48,7 +48,7 @@
 ### 安装与部署 / Installation
 
 1. 从官方来源准备 [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify)、[Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0)、[C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5)、[PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9)、[Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2)。Admin 另需 [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases), [Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases), [Translations](https://github.com/untrustedmodders/plugify-plugin-translations/releases), [permissions-connector-s2](https://github.com/fr0nch/permissions-connector-s2/releases), [permissions-storage](https://github.com/fr0nch/permissions-storage/releases)。按下方步骤替换两个权限库，保留官方包的清单和默认资源。
-2. 正常停服。安装与服务器平台匹配的 `s2sdk-fork-3.5.1-abc161b-<platform>.zip` 和 `imomoe-native-base-0.4.0-<platform>.zip`，再把 Admin ZIP 的 `game/` 树复制到服务器根目录。Admin ZIP 不携带共享插件和权限组件。
+2. 正常停服。安装与服务器平台匹配的 `s2sdk-fork-3.5.1-019e5b7-<platform>.zip` 和 `imomoe-native-base-0.4.0-<platform>.zip`，再把 Admin ZIP 的 `game/` 树复制到服务器根目录。Admin ZIP 不携带共享插件和权限组件。
 3. 若 FunRounds 已使用同一配对，只装 Admin 和缺少的权限组件。切换配对时，先确认现有消费者也支持新配对，并把被替换的同名 SDK 或旧 `funrounds_native` 移出扫描目录。覆盖官方文件后再运行 `mamba update --all` 不受支持。
 4. 保留现有配置、公告和数据。回退单独加装的 Admin 时停服撤下 Admin，保留其他消费者仍用的共享依赖。退回旧 provider 时还原整组旧消费者、SDK、provider 和配置。
 
