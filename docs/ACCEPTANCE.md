@@ -22,7 +22,7 @@ cargo build --release --workspace --locked
 
 - **S2SDK / NativeBase**：固定 S2SDK `3.4.3@e2b88d3` 提供 `ForceRespawnClient`，NativeBase 0.1.0 提供真实引擎 `GetClientUserID`。
 - **ServerFixes（可选）**：启用 `sf_noclip_reset 1` 时，选用包含 `Imomoe-ServerFixes-CS2 main@67232f8` 的构建（[`serverfixes-noclip-ownership.patch`](../integration/serverfixes-noclip-ownership.patch)）。
-- **Permissions**：`permissions >= 1.3.1`、connector 和 storage。使用 [Windows 复建与安装步骤](../README.md#windows-权限组件复建--rebuild-windows-permissions)；在隔离 SQLite 中用有昵称和既定 lastvisit_at 的合成离线资料，检查 Admin 免疫放行与拒绝结果，并核对两个字段均不变。
+- **Permissions**：`permissions >= 1.3.1`、connector 和 storage。使用 [权限组件复建与安装步骤](../README.md#权限组件复建--rebuild-permissions)；在隔离 SQLite 中用有昵称和既定 lastvisit_at 的合成离线资料，检查 Admin 免疫放行与拒绝结果，并核对两个字段均不变。
 
 ---
 
@@ -69,7 +69,7 @@ Confirm the isolated test server meets these runtime prerequisites:
 
 - **S2SDK / NativeBase**: Pinned S2SDK `3.4.3@e2b88d3` provides `ForceRespawnClient`; NativeBase 0.1.0 provides engine `GetClientUserID`.
 - **ServerFixes (Optional)**: When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8` ([`serverfixes-noclip-ownership.patch`](../integration/serverfixes-noclip-ownership.patch)).
-- **Permissions**: `permissions >= 1.3.1`, connector, and storage. Follow the [Windows rebuild and install steps](../README.md#windows-权限组件复建--rebuild-windows-permissions). In an isolated SQLite database, use synthetic offline profiles with known names and last visit timestamps; verify Admin's immunity allow/deny results and that both fields are unchanged.
+- **Permissions**: `permissions >= 1.3.1`, connector, and storage. Follow the [permissions rebuild and install steps](../README.md#权限组件复建--rebuild-permissions). In an isolated SQLite database, use synthetic offline profiles with known names and last visit timestamps; verify Admin's immunity allow/deny results and that both fields are unchanged.
 
 ---
 
