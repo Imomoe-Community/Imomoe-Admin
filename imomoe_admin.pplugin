@@ -9,7 +9,7 @@
   "dependencies": [
     {
       "name": "s2sdk",
-      "constraints": "3.5.1"
+      "constraints": "3.5.2"
     },
     {
       "name": "imomoe_native_base",

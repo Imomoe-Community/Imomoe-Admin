@@ -107,11 +107,9 @@ fn slap_chat_args(
     if prefix.len() == 1 && without_damage.is_empty() {
         return Ok(None);
     }
-    let mut with_damage = Vec::new();
-    let numeric = last.strip_prefix(['+', '-']).unwrap_or(last);
-    if !numeric.is_empty() && numeric.bytes().all(|c| c.is_ascii_digit()) {
+    let with_damage: Vec<_> = if slap_damage(last).is_some() {
         let nickname = prefix.join(" ").to_lowercase();
-        with_damage = players
+        players
             .iter()
             .filter(|p| {
                 let name = chat_nickname(&p.name);
@@ -122,25 +120,28 @@ fn slap_chat_args(
                     name == nickname
                 }
             })
-            .collect();
-    }
+            .collect()
+    } else {
+        Vec::new()
+    };
 
-    if without_damage.len() + with_damage.len() > 1 {
-        let mut choices: Vec<_> = without_damage
-            .iter()
-            .chain(&with_damage)
+    let mut matches: Vec<_> = without_damage.iter().chain(&with_damage).copied().collect();
+    matches.sort_unstable_by_key(|p| p.slot);
+    matches.dedup_by_key(|p| p.slot);
+    if matches.len() > 1 {
+        let mut choices: Vec<_> = matches
+            .into_iter()
             .map(|p| format!("{} (#userid:{})", p.name, p.user_id))
             .collect();
         choices.sort_unstable();
-        choices.dedup();
         return Err(choices);
     }
-    if let [p] = without_damage.as_slice() {
+    // The exact full name wins when both parses identify the same player.
+    if let Some(p) = without_damage.first() {
         return Ok(Some(vec![format!("#userid:{}", p.user_id)]));
     }
-    if let [p] = with_damage.as_slice()
+    if let Some(p) = with_damage.first()
         && prefix.len() > 1
-        && slap_damage(last).is_some()
     {
         return Ok(Some(vec![format!("#userid:{}", p.user_id), last.clone()]));
     }
@@ -464,9 +465,7 @@ fn dispatch(
         match slap_chat_args(args, &players) {
             Ok(value) => value,
             Err(choices) => {
-                if choices.len() > 1 {
-                    state.reply(actor, "ambiguous", &choices.join(", "));
-                }
+                state.reply(actor, "ambiguous", &choices.join(", "));
                 state.reply(actor, "usage", "!slap #userid:<N> [damage]");
                 return Ok(());
             }
@@ -813,7 +812,7 @@ pub fn imported_apply(
 
 #[cfg(test)]
 mod selector_arg_tests {
-    use super::selector_args;
+    use super::{Player, Team, selector_args, slap_chat_args, slap_damage};
     use imomoe_admin_core::command::lookup;
 
     #[test]
@@ -833,5 +832,69 @@ mod selector_arg_tests {
         );
         let args = ["#userid:12", "reason"].map(str::to_owned);
         assert_eq!(&*selector_args(lookup("kick", false).unwrap(), &args), args);
+    }
+
+    fn player(user_id: i32, name: &str) -> Player {
+        Player {
+            slot: user_id - 1,
+            user_id,
+            steam_id: None,
+            name: name.into(),
+            team: Team::CounterTerrorist,
+            alive: true,
+            bot: false,
+        }
+    }
+
+    #[test]
+    fn slap_prefers_the_exact_full_nickname_when_both_parses_match_one_player() {
+        let args = ["Bob", "10"].map(str::to_owned);
+        assert_eq!(
+            slap_chat_args(&args, &[player(1, "Bob 10")]),
+            Ok(Some(vec!["#userid:1".into()]))
+        );
+    }
+
+    #[test]
+    fn slap_reports_ambiguity_only_between_distinct_players() {
+        let args = ["Bob", "10"].map(str::to_owned);
+        assert_eq!(
+            slap_chat_args(&args, &[player(1, "Bob 10"), player(2, "Bob")]),
+            Err(vec!["Bob (#userid:2)".into(), "Bob 10 (#userid:1)".into()])
+        );
+    }
+
+    #[test]
+    fn slap_normalizes_multi_token_nicknames_with_damage() {
+        let args = ["Alice", "Smith", "25"].map(str::to_owned);
+        assert_eq!(
+            slap_chat_args(&args, &[player(1, "Alice Smith")]),
+            Ok(Some(vec!["#userid:1".into(), "25".into()]))
+        );
+
+        let args = ["Alice", "25"].map(str::to_owned);
+        assert_eq!(slap_chat_args(&args, &[player(1, "Alice")]), Ok(None));
+        assert_eq!(slap_damage(&args[1]), Some(25));
+    }
+
+    #[test]
+    fn slap_handles_missing_and_invalid_damage() {
+        let players = [player(1, "Alice Smith")];
+        assert_eq!(slap_chat_args(&[], &players), Ok(None));
+        assert_eq!(
+            slap_chat_args(&["Alice", "Smith"].map(str::to_owned), &players),
+            Ok(Some(vec!["#userid:1".into()]))
+        );
+        for invalid in ["nope", "-1", "1001"] {
+            let args = ["Alice", "Smith", invalid].map(str::to_owned);
+            assert_eq!(slap_chat_args(&args, &players), Ok(None));
+            assert_eq!(slap_damage(invalid), None);
+        }
+
+        let args = ["Bob", "1001"].map(str::to_owned);
+        assert_eq!(
+            slap_chat_args(&args, &[player(1, "Bob 1001"), player(2, "Bob")]),
+            Ok(Some(vec!["#userid:1".into()]))
+        );
     }
 }

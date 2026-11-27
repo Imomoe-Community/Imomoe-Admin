@@ -19,7 +19,7 @@
 ```mermaid
 flowchart TD
     Perms["plugify-plugin-permissions + permissions-connector-s2<br/>（已安装底座：用户/组/继承/过期/原生 Immunity）"]
-    S2SDK["s2sdk v3.5.1<br/>（引擎接口：Kick / 禁麦 / ServerCmd）"]
+    S2SDK["s2sdk v3.5.2<br/>（引擎接口：Kick / 禁麦 / ServerCmd）"]
     NativeBase["Imomoe-NativeBase-CS2 0.4.0<br/>（引擎 userid / 强制复活）"]
     Fixes["Imomoe-ServerFixes-CS2<br/>（聊天准入 / 语音修复 / noclip 恢复 / 换队限流）"]
     Prefix["imomoe_chat_prefix（可选）<br/>（统一聊天前缀）"]
@@ -60,7 +60,7 @@ flowchart TD
      - **原生免疫值（Immunity）**：支持为玩家或组配置免疫度（`-1` 继承最高组优先级），执行者免疫度须 `>=` 目标免疫度；
      - `permissions-storage`（默认本地 SQLite `permissions.db`）与 `perms_*` 维护命令。
    - **本插件职责**：`imomoe_admin.pplugin` 声明依赖 `permissions`（启动与热加载时基于服务器实际 `.pplugin` 生成强类型绑定），不重复造第二套用户/组权限存储。
-   - **依赖构建**：离线用户加载使用 [permissions-storage 资料保留补丁](../integration/permissions-storage-offline-profile.patch)（已验证 SQLite）。Windows 环境下，`permissions-connector-s2`（1.0.0）与 `permissions-storage`（1.0.2）同载需使用包含 [Go 上游 TLS 修复 `35b807d`](https://github.com/golang/go/commit/35b807d) 的 Go 1.28+ 构建，避免争用 `ArbitraryUserPointer`。
+   - **依赖构建**：离线用户加载使用 [permissions-storage 资料保留补丁](../integration/permissions-storage-offline-profile.patch)（已验证 SQLite）。Windows 环境下，`permissions-connector-s2`（1.0.1）与 `permissions-storage`（1.0.2）同载需使用包含 [Go 上游 TLS 修复 `35b807d`](https://github.com/golang/go/commit/35b807d) 的 Go 1.28+ 构建，避免争用 `ArbitraryUserPointer`。
 2. **仅在本插件内补充管理侧策略**：
    - 目标自指开关（如是否允许对自己使用 `!slap`/`!respawn`/`!noclip`）；
    - RCON / 服务端控制台始终拥有最高权限与最高免疫，不受玩家免疫限制；
@@ -120,7 +120,7 @@ flowchart TD
 
 #### 3.1 一期 S2SDK 依赖与二期接口
 
-1. **S2SDK**：固定 fork `3.5.1@54903d0`（SourceSDK `e4e7260`）沿用[官方 `v3.5.1` 导出 ABI](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.5.1/plugify-plugin-s2sdk.pplugin.in)，无自定义导出。`KickClient` 用原生原因码断连，消息用于服务端诊断；`GetClientListening` / `SetClientListening` 读写听者与发言者之间的语音覆盖；`ServerCommand` 执行固定的对局控制命令。
+1. **S2SDK**：固定 fork `3.5.2@86efb99`（SourceSDK `e4e7260`）沿用[官方 `v3.5.2` 导出 ABI](https://github.com/untrustedmodders/plugify-plugin-s2sdk/blob/v3.5.2/plugify-plugin-s2sdk.pplugin.in)，无自定义导出。`KickClient` 用原生原因码断连，消息用于服务端诊断；`GetClientListening` / `SetClientListening` 读写听者与发言者之间的语音覆盖；`ServerCommand` 执行固定的对局控制命令。
 2. **NativeBase 0.4.0**：`GetClientUserID` 供 `#userid:` 查找真实引擎 ID；`ForceRespawnClient` 供复活命令使用。
 3. **二期菜单实验所需**：
    - `CCSCustomHudLayout` 布局下发、每玩家覆写及 Panel 状态更新接口；
@@ -217,7 +217,7 @@ Exported in `imomoe_admin.pplugin`:
 
 ### 3. Engine Extensions & Cross-Plugin Boundaries
 
-- **S2SDK / NativeBase**: The pinned S2SDK fork `3.5.1@54903d0` (SourceSDK `e4e7260`) has the official `v3.5.1` export ABI and no custom exports. NativeBase `0.4.0` supplies `GetClientUserID` for engine userid lookup and `ForceRespawnClient` for the respawn command.
+- **S2SDK / NativeBase**: The pinned S2SDK fork `3.5.2@86efb99` (SourceSDK `e4e7260`) has the official `v3.5.2` export ABI and no custom exports. NativeBase `0.4.0` supplies `GetClientUserID` for engine userid lookup and `ForceRespawnClient` for the respawn command.
 - **`Imomoe-ServerFixes-CS2` Cooperation**:
   - Gagging routes through S2SDK command listeners without double-hooking ServerFixes's chat admission hook.
   - `Imomoe-ServerFixes-CS2 main@67232f8` includes noclip ownership support so `sf_noclip_reset 1` preserves only Admin-owned `noclip` on the active pawn handle.

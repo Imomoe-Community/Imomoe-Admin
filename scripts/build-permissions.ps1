@@ -24,8 +24,7 @@ New-Item -ItemType Directory -Path $work -Force | Out-Null
 
 $components = [ordered]@{
     'permissions-connector-s2' = @{
-        Revision = '6f19452665d0df055559e70b0797daa8c726bd1e'
-        Patch = 'permissions-connector-hint-locale.patch'
+        Revision = '6715a6dcae42617922f9817ca774487c1b9f972a'
     }
     'permissions-storage' = @{
         Revision = '04ff9bac478ee61019a46f899f54225c78fa0371'
@@ -46,7 +45,9 @@ foreach ($name in $components.Keys) {
     tar -xf $archive -C $work
     Push-Location (Join-Path $work "$name-$rev")
     try {
-        git apply --no-index "$PSScriptRoot/../integration/$($component.Patch)"
+        if ($component.ContainsKey('Patch')) {
+            git apply --no-index "$PSScriptRoot/../integration/$($component.Patch)"
+        }
         $binary = Join-Path $work "lib$name.$ext"
         & $goExe build -mod=readonly -buildmode=c-shared -trimpath '-ldflags=-s -w' -o $binary .
         & $goExe version -m $binary
