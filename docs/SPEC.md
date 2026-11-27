@@ -60,7 +60,7 @@ flowchart TD
      - **原生免疫值（Immunity）**：支持为玩家或组配置免疫度（`-1` 继承最高组优先级），执行者免疫度须 `>=` 目标免疫度；
      - `permissions-storage`（默认本地 SQLite `permissions.db`）与 `perms_*` 维护命令。
    - **本插件职责**：`imomoe_admin.pplugin` 声明依赖 `permissions`（启动与热加载时基于服务器实际 `.pplugin` 生成强类型绑定），不重复造第二套用户/组权限存储。
-   - **依赖构建**：离线用户加载使用 [permissions-storage 资料保留补丁](../integration/permissions-storage-offline-profile.patch)（已验证 SQLite）。Windows 环境下，`permissions-connector-s2`（1.0.1）与 `permissions-storage`（1.0.2）同载需使用包含 [Go 上游 TLS 修复 `35b807d`](https://github.com/golang/go/commit/35b807d) 的 Go 1.28+ 构建，避免争用 `ArbitraryUserPointer`。
+   - **权限组件**：Linux 直接使用 `permissions-connector-s2 >=1.0.1` 和 `permissions-storage >=1.0.3` 的官方包，无需源码补丁；storage 保留离线用户既有昵称与 `lastvisit_at`。Windows 同载时，若 DLL 未包含 [Go TLS 修复 `35b807d`](https://github.com/golang/go/commit/35b807d)，用包含该修复的 Go 无补丁重编两份 DLL，避免争用 `ArbitraryUserPointer`。
 2. **仅在本插件内补充管理侧策略**：
    - 目标自指开关（如是否允许对自己使用 `!slap`/`!respawn`/`!noclip`）；
    - RCON / 服务端控制台始终拥有最高权限与最高免疫，不受玩家免疫限制；
@@ -173,7 +173,7 @@ Following SourceMod's small, focused plugin philosophy, the Imomoe CS2 server su
 #### 2.1 Permissions & Immunity (`plugify-plugin-permissions`)
 
 1. **Direct Reuse**: `imomoe_admin.pplugin` depends on `permissions >=1.3.1` and `permissions_connector_s2` for users, groups, inheritance, wildcards (`imomoe.admin.*`), expiry, and native `Immunity` (`actor >= target`).
-   - **Dependency Builds**: Offline lookups require [`permissions-storage-offline-profile.patch`](../integration/permissions-storage-offline-profile.patch) (verified on SQLite). On Windows, `permissions-connector-s2` (1.0.0) and `permissions-storage` (1.0.2) must be built with Go 1.28+ containing [upstream TLS fix `35b807d`](https://github.com/golang/go/commit/35b807d) to avoid `ArbitraryUserPointer` contention.
+   - **Permissions Components**: On Linux, use the official `permissions-connector-s2 >=1.0.1` and `permissions-storage >=1.0.3` packages without source patches. Storage preserves existing offline user names and `lastvisit_at`. On Windows, if the DLLs lack [Go TLS fix `35b807d`](https://github.com/golang/go/commit/35b807d), rebuild both with a Go toolchain that includes the fix, without patching the component sources, to avoid `ArbitraryUserPointer` contention.
 2. **Admin Policy Layer**:
    - Self-targeting allowlist (`allow_self` in `admin.jsonc`) for commands like `!slap`, `!respawn`, and `!noclip`.
    - RCON / server console always holds full authority and overrides player immunity.

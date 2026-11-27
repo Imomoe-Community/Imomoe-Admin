@@ -31,14 +31,14 @@
 | **Plugify 框架**<br><sub><sup>Plugify Host</sup></sub> | `v3.1.0+`，需加载 Rust / Go 语言模块、PolyHook、Configs 与 Translations。<br><sub><sup>`v3.1.0+` with Rust and Go language modules, PolyHook, Configs, and Translations.</sup></sub> |
 | **S2SDK** | 固定 fork `3.5.2@86efb99`（SourceSDK `e4e7260`），导出 ABI 与官方 `v3.5.2` 一致，无自定义导出。<br><sub><sup>Pinned fork `3.5.2@86efb99` (SourceSDK `e4e7260`), with the official `v3.5.2` export ABI and no custom exports.</sup></sub> |
 | **NativeBase** | `0.4.0` 提供 `GetClientUserID` 和 `ForceRespawnClient`。Admin 可独立安装，不需要 FunRounds。<br><sub><sup>`0.4.0` supplies `GetClientUserID` and `ForceRespawnClient`; FunRounds is not required.</sup></sub> |
-| **Permissions** | `permissions >=1.3.1`、`translations >=1.1.0` 与 `permissions_connector_s2 >=1.0.1`。<br><sub><sup>`permissions >=1.3.1`, `translations >=1.1.0`, and `permissions_connector_s2 >=1.0.1`.</sup></sub> |
+| **Permissions** | `permissions >=1.3.1`、`translations >=1.1.0`、`permissions-connector-s2 >=1.0.1` 与 `permissions-storage >=1.0.3`。<br><sub><sup>`permissions >=1.3.1`, `translations >=1.1.0`, `permissions-connector-s2 >=1.0.1`, and `permissions-storage >=1.0.3`.</sup></sub> |
 | **ServerFixes（可选）**<br><sub><sup>ServerFixes (Optional)</sup></sub> | 若启用 `sf_noclip_reset 1`，请使用包含 `Imomoe-ServerFixes-CS2 main@67232f8` 的构建，该提交已合入 noclip 所有权协同。<br><sub><sup>When `sf_noclip_reset 1` is enabled, use a build containing `Imomoe-ServerFixes-CS2 main@67232f8`, which includes noclip ownership support.</sup></sub> |
 | **Chat Prefix（可选）**<br><sub><sup>Chat Prefix (Optional)</sup></sub> | [Imomoe Chat Prefix](https://github.com/Imomoe-Community/Imomoe-Chat-Prefix)（`imomoe_chat_prefix >=0.1.0`）；未安装时规则、帮助与定时公告以原文发送。<br><sub><sup>`imomoe_chat_prefix >=0.1.0`; when absent, rules, help, and scheduled announcements are sent without a prefix.</sup></sub> |
 
 > [!IMPORTANT]
 > - **权限提示 / Permission hints**：`s2sdk >=3.5.2`、`translations >=1.1.0` 与 `permissions-connector-s2 >=1.0.1` 已原生处理缺译回退，无需额外源码补丁。<br><sub><sup>`s2sdk >=3.5.2`, `translations >=1.1.0`, and `permissions-connector-s2 >=1.0.1` handle translation fallback natively without source patches.</sup></sub>
-> - **Windows 同载 / Windows co-loading**：官方 Windows DLL 缺少 [Go TLS 修复 `35b807d`](https://github.com/golang/go/commit/35b807d)，Windows 服务端仍须按下方步骤重编两份 DLL。<br><sub><sup>Official Windows DLLs lack the Go TLS fix; Windows servers must rebuild both DLLs using the steps below.</sup></sub>
-> - **离线免疫查询 / Offline Immunity Profile Patch**：`permissions-storage` 1.0.2 需合入 [离线资料补丁](integration/permissions-storage-offline-profile.patch)，防止查询离线玩家免疫度时覆盖数据库既有昵称与最后到访时间。<br><sub><sup>Apply the [offline profile patch](integration/permissions-storage-offline-profile.patch) to `permissions-storage` 1.0.2 so offline immunity lookups do not overwrite stored names or `lastvisit_at`.</sup></sub>
+> - **Windows 同载 / Windows co-loading**：若两份 DLL 未包含 [Go TLS 修复 `35b807d`](https://github.com/golang/go/commit/35b807d)，按下方步骤重编两份 DLL，无需修改组件源码。<br><sub><sup>If the Windows DLLs lack the Go TLS fix, rebuild both as described below without patching the component sources.</sup></sub>
+> - **离线免疫查询 / Offline immunity**：`permissions-storage >=1.0.3` 原生保留既有昵称和 `lastvisit_at`。<br><sub><sup>`permissions-storage >=1.0.3` preserves stored names and `lastvisit_at` during offline lookups.</sup></sub>
 
 > [!NOTE]
 > `permissions` 1.3.1 先检查玩家临时节点，再检查永久节点。临时通配（如 `imomoe.admin.*`）会覆盖永久单项拒绝；临时提权时建议仅授予实际需要的节点。<br><sub><sup>`permissions` 1.3.1 checks temporary permissions before permanent ones; temporary wildcards override permanent denies.</sup></sub>
@@ -47,7 +47,7 @@
 
 ### 安装与部署 / Installation
 
-1. 从官方来源准备 [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify)、[Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0)、[C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5)、[PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9)、[Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2)。Admin 另需 [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases)、[Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases)、[Translations 1.1.0+](https://github.com/untrustedmodders/plugify-plugin-translations/releases)、[permissions-connector-s2 1.0.1+](https://github.com/fr0nch/permissions-connector-s2/releases) 与 [permissions-storage 1.0.2](https://github.com/fr0nch/permissions-storage/releases)。按下方步骤替换需重编的权限库，保留官方包的清单和默认资源。
+1. 从官方来源准备 [S2-Launcher 2.5.8](https://github.com/untrustedmodders/plugify-source2-launcher/releases/tag/v2.5.8) / [Plugify](https://github.com/untrustedmodders/plugify)、[Rust module 1.3.0](https://github.com/untrustedmodders/plugify-module-rust/releases/tag/v1.3.0)、[C++ module 2.4.5](https://github.com/untrustedmodders/plugify-module-cpp/releases/tag/v2.4.5)、[PolyHook 2.5.9](https://github.com/untrustedmodders/plugify-plugin-polyhook/releases/tag/v2.5.9)、[Configs 2.1.2](https://github.com/untrustedmodders/plugify-plugin-configs/releases/tag/v2.1.2)。Admin 另需 [Go module](https://github.com/untrustedmodders/plugify-module-golang/releases)、[Permissions](https://github.com/untrustedmodders/plugify-plugin-permissions/releases)、[Translations 1.1.0+](https://github.com/untrustedmodders/plugify-plugin-translations/releases)、[permissions-connector-s2 1.0.1+](https://github.com/fr0nch/permissions-connector-s2/releases) 与 [permissions-storage 1.0.3+](https://github.com/fr0nch/permissions-storage/releases)。Linux 直接安装两份官方权限包；Windows 若需重编，仅替换下方说明的动态库。
 2. 正常停服。安装与服务器平台匹配的 `s2sdk-fork-3.5.2-86efb99-<platform>.zip` 和 `imomoe-native-base-0.4.0-<platform>.zip`，再把 Admin ZIP 的 `game/` 树复制到服务器根目录。Admin ZIP 不携带共享插件和权限组件。
 3. 若 FunRounds 已使用同一配对，只装 Admin 和缺少的权限组件。切换配对时，先确认现有消费者也支持新配对，并把被替换的同名 SDK 或旧 `funrounds_native` 移出扫描目录。覆盖官方文件后再运行 `mamba update --all` 不受支持。
 4. 保留现有配置、公告和数据。回退单独加装的 Admin 时停服撤下 Admin，保留其他消费者仍用的共享依赖。退回旧 provider 时还原整组旧消费者、SDK、provider 和配置。
@@ -61,9 +61,9 @@ python scripts/package.py --platform windows-x64 --binary target/release/imomoe_
 
 #### 权限组件复建 / Rebuild permissions
 
-保留官方 [connector 1.0.1](https://github.com/fr0nch/permissions-connector-s2/releases/tag/v1.0.1) 和 [storage 1.0.2](https://github.com/fr0nch/permissions-storage/releases/tag/v1.0.2) 的清单与默认资源，只替换重编后的动态库。脚本从固定的官方源码修订构建：connector `1.0.1` 不再应用源码补丁（Windows 仅因 Go TLS 修复一起重编，Linux 可直接沿用官方 `.so`），storage `1.0.2` 应用离线资料补丁。<br><sub><sup>Keep the official package manifests and resources. Both builds use pinned upstream revisions: connector `1.0.1` is unpatched (rebuilt on Windows only for the Go TLS fix; Linux can use the official `.so`), while storage `1.0.2` applies the offline profile patch.</sup></sub>
+Linux 直接使用官方 [connector 1.0.1+](https://github.com/fr0nch/permissions-connector-s2/releases) 与 [storage 1.0.3+](https://github.com/fr0nch/permissions-storage/releases) 包，两者均无需源码补丁。Windows 重编脚本固定使用 connector `1.0.1`、storage `1.0.3` 的上游源码，不打补丁；保留官方包的清单与默认资源，只替换库。<br><sub><sup>On Linux, use the official connector 1.0.1+ and storage 1.0.3+ packages as-is. The Windows rebuild uses unpatched upstream connector `1.0.1` and storage `1.0.3` sources. Keep the official manifests and resources; replace only the libraries.</sup></sub>
 
-两端需要 PowerShell 7.5+、Git、curl、tar 和工作树外的新输出目录。Windows x64 使用 Go 1.27.4 引导编译器和 MinGW-w64 UCRT64 GCC（实测 16.2.0）；入口先复建带 TLS 修复的 Go。<br><sub><sup>On both platforms use PowerShell 7.5+, Git, curl, tar, and a new output directory outside the worktree. On Windows x64 use Go 1.27.4 to bootstrap the fixed Go toolchain, and MinGW-w64 UCRT64 GCC (verified with 16.2.0).</sup></sub>
+复建需要 PowerShell 7.5+、curl、tar 和新输出目录。Windows x64 使用 Go 1.27.4 引导编译器和 MinGW-w64 UCRT64 GCC（实测 16.2.0）；入口先复建带 TLS 修复的 Go。<br><sub><sup>Rebuilds require PowerShell 7.5+, curl, tar, and a fresh output directory. On Windows x64, use Go 1.27.4 to bootstrap the fixed Go toolchain and MinGW-w64 UCRT64 GCC (verified with 16.2.0).</sup></sub>
 
 ```powershell
 $out = Join-Path $env:TEMP 'imomoe-windows-permissions'
@@ -71,7 +71,7 @@ $out = Join-Path $env:TEMP 'imomoe-windows-permissions'
     -BootstrapGoRoot 'C:\Program Files\Go' -Gcc 'C:\msys64\ucrt64\bin\gcc.exe'
 ```
 
-Linux x64 在 Steam Runtime Sniper 下使用 Go 1.27.4 和 GCC 10。将 `/path/to/go/bin/go` 换成实际 Go 路径。<br><sub><sup>On Linux x64 use Go 1.27.4 and GCC 10 in Steam Runtime Sniper. Substitute the path to your Go executable.</sup></sub>
+如需在 Linux x64 从源码复现构建，在 Steam Runtime Sniper 中使用 Go 1.27.4 和 GCC 10。将 `/path/to/go/bin/go` 换成实际 Go 路径。<br><sub><sup>For an optional Linux x64 source build, use Go 1.27.4 and GCC 10 in Steam Runtime Sniper. Substitute the path to your Go executable.</sup></sub>
 
 ```sh
 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 pwsh -NoProfile -File ./scripts/build-permissions.ps1 \
@@ -80,7 +80,7 @@ DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 pwsh -NoProfile -File ./scripts/build-pe
 
 Sniper 容器内不能联网时，在联网主机用同一脚本的 `-DownloadOnly -OutputDirectory <源码目录>` 预下载官方归档；将该目录挂入容器并给构建命令添加 `-SourceDirectory <容器内源码目录>`。离线容器还需已填充的 Go 模块缓存（`GOMODCACHE`）。<br><sub><sup>For an offline Sniper container, use `-DownloadOnly -OutputDirectory <source-dir>` on the networked host, mount those archives, and add `-SourceDirectory <mounted-source-dir>` to the build command. Supply a populated Go module cache (`GOMODCACHE`) too.</sup></sub>
 
-停服后，将输出的 `libpermissions-connector-s2` 和 `libpermissions-storage`（Windows 为 `.dll`、Linux 为 `.so`）放到各自官方包现有的 `bin/`。保留配置、SQLite 数据和原二进制以便回退；每个组件只加载一份。启动后用 `plg plugins` 确认 `permissions`、`permissions_connector_s2`、`permissions_storage` 和 `imomoe_admin` 均为 `Running`，再用服务端控制台的 `perms_groups` 确认能读到 SQLite 分组。<br><sub><sup>Stop the server and replace the two DLLs or SOs in their existing package `bin/` directories. Keep configuration, SQLite data and rollback files. Load only one copy of each plugin, then check that all four are running and that `perms_groups` shows SQLite groups.</sup></sub>
+若已复建，停服后将输出的 `libpermissions-connector-s2` 和 `libpermissions-storage`（Windows 为 `.dll`、Linux 为 `.so`）放到各自官方包现有的 `bin/`。保留配置、SQLite 数据和原二进制以便回退；每个组件只加载一份。启动后用 `plg plugins` 确认 `permissions`、`permissions_connector_s2`、`permissions_storage` 和 `imomoe_admin` 均为 `Running`，再用服务端控制台的 `perms_groups` 确认能读到 SQLite 分组。<br><sub><sup>If you rebuilt the libraries, stop the server and replace the two DLLs or SOs in their existing package `bin/` directories. Keep configuration, SQLite data and rollback files. Load only one copy of each plugin, then check that all four are running and that `perms_groups` shows SQLite groups.</sup></sub>
 
 ### 常用操作与目标选择 / Usage & Target Resolution
 

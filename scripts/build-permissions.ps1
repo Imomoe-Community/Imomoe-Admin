@@ -27,8 +27,7 @@ $components = [ordered]@{
         Revision = '6715a6dcae42617922f9817ca774487c1b9f972a'
     }
     'permissions-storage' = @{
-        Revision = '04ff9bac478ee61019a46f899f54225c78fa0371'
-        Patch = 'permissions-storage-offline-profile.patch'
+        Revision = '912203b47cf800216b5ac5f777e6a58138d96eee'
     }
 }
 foreach ($name in $components.Keys) {
@@ -45,9 +44,6 @@ foreach ($name in $components.Keys) {
     tar -xf $archive -C $work
     Push-Location (Join-Path $work "$name-$rev")
     try {
-        if ($component.ContainsKey('Patch')) {
-            git apply --no-index "$PSScriptRoot/../integration/$($component.Patch)"
-        }
         $binary = Join-Path $work "lib$name.$ext"
         & $goExe build -mod=readonly -buildmode=c-shared -trimpath '-ldflags=-s -w' -o $binary .
         & $goExe version -m $binary
